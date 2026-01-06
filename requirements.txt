@@ -3,6 +3,8 @@ langchain>=1.2.0
 langchain-openai>=1.1.0
 langchain-core>=1.2.0
 langgraph>=1.0.0
+sentence-transformers
+langchain-chroma
 
 # --- Integrations (Versioned separately in v1 era) ---
 langchain-community>=0.4.0
@@ -15,6 +17,7 @@ python-dotenv>=1.0.0
 # --- Database & Testing ---
 pydantic>=2.10.0
 pytest>=8.0.0
+chromadb
 
 # --- Utilities ---
-dotenv>=1.0.0
+dotenv
