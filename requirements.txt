@@ -1,0 +1,17 @@
+# --- Core AI & Orchestration (2026 Stable) ---
+langchain>=1.2.0
+langchain-openai>=1.1.0
+langchain-core>=1.2.0
+langgraph>=1.0.0
+
+# --- Integrations (Versioned separately in v1 era) ---
+langchain-community>=0.4.0
+
+# --- API & Web Server ---
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-dotenv>=1.0.0
+
+# --- Database & Testing ---
+pydantic>=2.10.0
+pytest>=8.0.0
