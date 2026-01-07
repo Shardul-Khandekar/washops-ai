@@ -27,7 +27,7 @@ def check_availability(date: Annotated[str, "The date to check in YYYY-MM-DD for
 def book_appointment(
     name: Annotated[str, "The customer's full name"],
     phone: Annotated[str, "The customer's phone number"],
-    time: Annotated[str, "The appointment time in YYYY-MM-DD HH:MM format"],
+    time: Annotated[str, "The appointment time. MUST be in 'YYYY-MM-DD HH:MM' format (e.g., '2026-01-12 14:30')"],
     service: Annotated[str, "The type of wash (e.g., Basic, Full Detail, Ceramic)"]
 ):
     """
@@ -48,16 +48,17 @@ def book_appointment(
     
 @tool
 def cancel_appointment(name: Annotated[str, "The customer's full name"], 
-                       time: Annotated[str, "The appointment time in YYYY-MM-DD HH:MM format"]):
+                       time: Annotated[str, "The EXACT appointment time as stored in the DB, format 'YYYY-MM-DD HH:MM'"]):
     """
-    Cancels an existing car wash appointment from the database.
+    Cancels an existing car wash appointment from the database. Always check availability first to find the exact time string.
     Use this if a customer explicitly asks to cancel or delete their booking.
+    
     """
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
         # Verify both name and time to avoid accidental deletions
-        cursor.execute("DELETE FROM appointments WHERE customer_name = ? AND time = ?", (name, time))
+        cursor.execute("DELETE FROM appointments WHERE customer_name = ? AND time LIKE ?", (name, time))
         
         if cursor.rowcount > 0:
             conn.commit()
