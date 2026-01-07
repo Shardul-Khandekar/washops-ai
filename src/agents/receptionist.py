@@ -6,6 +6,7 @@ from src.tools.info_tools import ask_faq
 from src.agents.state import ReceptionistState
 from dotenv import load_dotenv
 import os
+from datetime import datetime
 
 load_dotenv()
 
@@ -19,12 +20,22 @@ llm_with_tools = llm.bind_tools(tools)
 # Define chatbot node
 def call_model(state: ReceptionistState):
     messages = state['messages']
+
+    # Get current time for LLM context
+    current_time = datetime.now().strftime("%A, %B %d, %Y, %I:%M %p")
+
+
     # System prompt
     system_prompt = (
-        "You are a friendly car wash receptionist. "
+        f"You are a friendly car wash receptionist. Current Time: {current_time}."
         "Use 'ask_faq' to answer questions about pricing, hours, or services. "
         "Use 'check_availability', 'book_appointment', and 'cancel_appointment' for scheduling. "
         "If you don't know the answer, use 'ask_faq' before telling the customer you don't know."
+
+        "IMPORTANT DATE RULES: "
+        "1. All dates passed to tools MUST be in 'YYYY-MM-DD' format. "
+        "2. All times passed to tools MUST be in 24-hour 'HH:MM' format. "
+        "3. Use the current time provided to resolve relative dates like 'tomorrow' or 'next Tuesday'. "
     )
     response = llm_with_tools.invoke([("system", system_prompt)] + messages)
     # Append response to messages
