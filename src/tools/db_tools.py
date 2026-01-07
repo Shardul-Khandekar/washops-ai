@@ -45,3 +45,26 @@ def book_appointment(
         return f"Successfully booked {service} for {name} at {time}."
     except Exception as e:
         return f"Error writing to database: {str(e)}"
+    
+@tool
+def cancel_appointment(name: Annotated[str, "The customer's full name"], 
+                       time: Annotated[str, "The appointment time in YYYY-MM-DD HH:MM format"]):
+    """
+    Cancels an existing car wash appointment from the database.
+    Use this if a customer explicitly asks to cancel or delete their booking.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        # Verify both name and time to avoid accidental deletions
+        cursor.execute("DELETE FROM appointments WHERE customer_name = ? AND time = ?", (name, time))
+        
+        if cursor.rowcount > 0:
+            conn.commit()
+            conn.close()
+            return f"Successfully cancelled the appointment for {name} at {time}."
+        else:
+            conn.close()
+            return f"No appointment found for {name} at {time} to cancel."
+    except Exception as e:
+        return f"Error accessing database during cancellation: {str(e)}"
