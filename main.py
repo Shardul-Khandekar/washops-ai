@@ -3,8 +3,7 @@ from src.agents.receptionist import receptionist_app
 def run_receptionist():
 
     inputs = [
-        "How much is a full detail?",
-        "Okay, can you book me for that tomorrow at 10 AM? My name is Shardul and my number is 123-456."
+        "Can you cancel my appointment for tomorrow at 10 AM? My name is Shardul.",
     ]
 
     state = {"messages": []}
@@ -14,6 +13,7 @@ def run_receptionist():
         # User message needs to be appended to state manually
         state["messages"].append(("user", user_input))
         output = receptionist_app.invoke(state)
+        # print(output)
         # update state with new messages
         state["messages"] = output["messages"]
         # Print last agent response
@@ -36,3 +36,6 @@ def run_receptionist():
 
 if __name__ == "__main__":
     run_receptionist()
+
+
+#tool_calls=[{'name': 'cancel_appointment', 'args': {'name': 'Shardul', 'time': '2023-11-24 10:00'}, 'id': 'call_Mxv4GJtvfg07tQHLzs8jgueD', 'type': 'tool_call'}]
