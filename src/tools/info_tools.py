@@ -3,6 +3,7 @@ from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_core.tools import tool
 import os
+from typing import Annotated
 
 # Initialize vector store
 embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
@@ -37,6 +38,17 @@ def ask_faq(query: str):
         return results[0].page_content
     else:
         return "I'm sorry, I don't have information on that. Would you like to speak to a manager?"
+    
+@tool
+def handoff_to_manager(reason: Annotated[str, "The specific reason why a human manager is needed (e.g., damage claim, extreme frustration)"]):
+    """
+    Escalates the call to a human manager. Use this ONLY if:
+    1. The user is reporting damage to their vehicle.
+    2. The user is extremely angry or using profanity.
+    3. The user has a complex request that the current tools cannot handle.
+    """
+    print(f"\n[SYSTEM ALERT] Handoff Triggered. Reason: {reason}")
+    return f"I have alerted my manager regarding: '{reason}'. A human will take over this call immediately. Please stay on the line."
     
 if __name__ == "__main__":
     # Run ingestion once
