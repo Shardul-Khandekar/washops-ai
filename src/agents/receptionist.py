@@ -46,6 +46,11 @@ def call_model(state: ReceptionistState):
         "- Once all 4 items are collected, ALWAYS call 'check_availability' once you have a date/time, but BEFORE calling 'book_appointment'.\n"
         "- Do not make up information. If a slot is empty, ask the user."
 
+        "### HANDLING CONFLICTS:\n"
+        "- If 'check_availability' shows the user's requested time is taken, DO NOT just say it's unavailable.\n"
+        "- Look at the booked slots and suggest the nearest available times (e.g., if 10:00 is taken, suggest 10:30 or 11:00).\n"
+        "- Be proactive. The goal is to get a booking, so keep the customer engaged with options."
+
         "IMPORTANT DATE RULES: "
         "1. All dates passed to tools MUST be in 'YYYY-MM-DD' format. "
         "2. All times passed to tools MUST be in 24-hour 'HH:MM' format. "
