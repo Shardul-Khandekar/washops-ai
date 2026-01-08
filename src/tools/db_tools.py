@@ -2,6 +2,7 @@ from typing import Annotated
 import sqlite3
 from langchain_core.tools import tool
 from src.utils.db_manager import get_db_connection
+import re
 
 @tool
 def check_availability(date: Annotated[str, "The date to check in YYYY-MM-DD format"]):
@@ -31,8 +32,19 @@ def book_appointment(
     service: Annotated[str, "The type of wash (e.g., Basic, Full Detail, Ceramic)"]
 ):
     """
-    Books a new car wash appointment into the database.
+    Books a new car wash appointment. Requires name, phone, time, and service type.
     """
+
+    # Phone number basic validation
+    clean_phone = re.sub(r'\D', '', phone)
+    if len(clean_phone) < 10:
+        return "Error: The phone number provided is invalid. I need at least 10 digits."
+    
+    # Service type basic validation
+    valid_services = ["Basic", "Full Detail"]
+    if service not in valid_services:
+        return f"Error: '{service}' is not a valid service. Please choose Basic or Full Detail."
+
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
