@@ -8,21 +8,22 @@ import re
 def check_availability(date: Annotated[str, "The date to check in YYYY-MM-DD format"]):
     """
     Consult the car wash schedule to see existing appointments for a specific date.
+    Use this to see what slots are ALREADY taken so you can suggest empty ones.
     Returns a string summary of the day's bookings.
     """
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT time, service FROM appointments WHERE time LIKE ?", (f'{date}%',))
+    cursor.execute("SELECT time FROM appointments WHERE time LIKE ? ORDER BY time ASC", (f'{date}%',))
     rows = cursor.fetchall()
     conn.close()
 
     if not rows:
         return f"No appointments found for {date}. The whole day is available."
     
-    schedule = [f"{row['time']}: {row['service']}" for row in rows]
-    return f"Schedule for {date}: " + ", ".join(schedule)
+    taken_slots = [row['time'].split(" ")[1] for row in rows]
+    return f"On {date}, these times are ALREADY BOOKED: {', '.join(taken_slots)}. Suggest any other time to the user."
 
 @tool
 def book_appointment(
