@@ -7,6 +7,7 @@ from src.agents.state import ReceptionistState
 from dotenv import load_dotenv
 import os
 from datetime import datetime
+from langgraph.checkpoint.memory import MemorySaver
 
 load_dotenv()
 
@@ -16,6 +17,9 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 llm = ChatOpenAI(model="gpt-4o", temperature=0, openai_api_key=openai_api_key)
 tools = [check_availability, book_appointment, cancel_appointment, ask_faq]
 llm_with_tools = llm.bind_tools(tools)
+
+# Iinitialize memory saver
+memory = MemorySaver()
 
 # Define chatbot node
 def call_model(state: ReceptionistState):
@@ -72,4 +76,4 @@ workflow.add_conditional_edges("agent", tools_condition)
 workflow.add_edge("tools", "agent")
 
 # Compile the graph
-receptionist_app = workflow.compile()
+receptionist_app = workflow.compile(checkpointer=memory)
