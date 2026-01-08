@@ -32,11 +32,26 @@ def call_model(state: ReceptionistState):
         "Use 'check_availability', 'book_appointment', and 'cancel_appointment' for scheduling. "
         "If you don't know the answer, use 'ask_faq' before telling the customer you don't know."
 
+        "### BOOKING PROTOCOL:\n"
+        "Before calling 'book_appointment', you MUST collect and verify these 4 pieces of info:\n"
+        "1. Service Type (Basic or Full Detail)\n"
+        "2. Date & Time (Standardize to YYYY-MM-DD HH:MM)\n"
+        "3. Customer Name\n"
+        "4. Phone Number\n\n"
+        
+        "### GUIDELINES:\n"
+        "- If the user provides partial info (e.g., 'I want a wash tomorrow'), acknowledge it and ask for the missing slots (e.g., 'What time and what is your name?').\n"
+        "- If the user gives you information you didn't ask for yet, acknowledge it and move to the next missing item.\n"
+         "- Extract information from the user regardless of the order they provide it.\n"
+        "- Once all 4 items are collected, ALWAYS call 'check_availability' once you have a date/time, but BEFORE calling 'book_appointment'.\n"
+        "- Do not make up information. If a slot is empty, ask the user."
+
         "IMPORTANT DATE RULES: "
         "1. All dates passed to tools MUST be in 'YYYY-MM-DD' format. "
         "2. All times passed to tools MUST be in 24-hour 'HH:MM' format. "
         "3. Use the current time provided to resolve relative dates like 'tomorrow' or 'next Tuesday'. "
     )
+
     response = llm_with_tools.invoke([("system", system_prompt)] + messages)
     # Append response to messages
     return {"messages": [response]}
