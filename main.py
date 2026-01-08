@@ -1,5 +1,33 @@
 from src.agents.receptionist import receptionist_app
 
+def test_chaos_booking():
+    
+    history = []
+
+    print("---- Test: Chaos Booking ----")
+
+    # Simulate a chaotic booking conversation
+    user_msg = "I want to book a wash for tomorrow at 3 PM."
+    history.append(("user", user_msg))
+    output = receptionist_app.invoke({"messages": history})
+    history.append(output["messages"][-1])
+    print(f"AI: {output['messages'][-1].content}")
+
+    # Agent can ask any of the missing info in any order
+    # User might or might not response with something ELSE entirely
+    user_msg = "My phone number is 123-456-7890."
+    history.append(("user", user_msg))
+    output = receptionist_app.invoke({"messages": history})
+    history.append(output["messages"][-1])
+    print(f"AI: {output['messages'][-1].content}")
+
+    # Giveuser_msg = "It's for Shardul and I want a Full Detail."
+    user_msg = "It's for Sam and I want a Full Detail."
+    history.append(("user", user_msg))
+    output = receptionist_app.invoke({"messages": history})
+    print(f"AI: {output['messages'][-1].content}")
+
+
 def run_receptionist():
 
     inputs = [
@@ -35,7 +63,8 @@ def run_receptionist():
     # print("AI:", output["messages"][-1].content)
 
 if __name__ == "__main__":
-    run_receptionist()
+    # run_receptionist()
+    test_chaos_booking()
 
 
 #tool_calls=[{'name': 'cancel_appointment', 'args': {'name': 'Shardul', 'time': '2023-11-24 10:00'}, 'id': 'call_Mxv4GJtvfg07tQHLzs8jgueD', 'type': 'tool_call'}]
