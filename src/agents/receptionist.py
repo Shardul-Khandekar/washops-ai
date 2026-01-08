@@ -2,7 +2,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode, tools_condition
 from src.tools.db_tools import check_availability, book_appointment, cancel_appointment
-from src.tools.info_tools import ask_faq
+from src.tools.info_tools import ask_faq, handoff_to_manager
 from src.agents.state import ReceptionistState
 from dotenv import load_dotenv
 import os
@@ -15,7 +15,7 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 
 # Setup LLM
 llm = ChatOpenAI(model="gpt-4o", temperature=0, openai_api_key=openai_api_key)
-tools = [check_availability, book_appointment, cancel_appointment, ask_faq]
+tools = [check_availability, book_appointment, cancel_appointment, ask_faq, handoff_to_manager]
 llm_with_tools = llm.bind_tools(tools)
 
 # Iinitialize memory saver
@@ -59,6 +59,11 @@ def call_model(state: ReceptionistState):
         "1. All dates passed to tools MUST be in 'YYYY-MM-DD' format. "
         "2. All times passed to tools MUST be in 24-hour 'HH:MM' format. "
         "3. Use the current time provided to resolve relative dates like 'tomorrow' or 'next Tuesday'. "
+
+        "### ESCALATION PROTOCOL:\n"
+        "- You must call 'handoff_to_manager' immediately if the user mentions 'damage', 'scratch', 'dent', or 'lawsuit'.\n"
+        "- If the user becomes abusive or says 'I want to speak to a manager', escalate immediately.\n"
+        "- Once you call the handoff tool, stop trying to book the appointment and let the user know a human is coming."
     )
 
     response = llm_with_tools.invoke([("system", system_prompt)] + messages)
