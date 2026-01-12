@@ -9,7 +9,9 @@ const {
     createCarWash,
     getWashesByOwner,
     getWashById,
-    updateWashNumber
+    updateWashNumber,
+    getHoursByWashId,
+    updateBusinessHours
 } = require('./db');
 
 const { provisionNewNumber } = require('./twilio_helper');
@@ -81,7 +83,7 @@ app.post('/api/twilio/provision', async (req, res) => {
 
     console.log(`[TWILIO] Assigned ${newNumber} to wash ID ${wash_id}`);
     res.status(200).json({ twilioNumber: newNumber });
-    
+
     } catch (error) {
         console.error("Provisioning Error:", error);
         res.status(500).json({ error: "Failed to provision number" });
@@ -127,6 +129,35 @@ app.get('/api/washes/:id', async (req, res) => {
     res.status(200).json(wash);
   } catch (error) {
     res.status(500).json({ error: "Server error" });
+  }
+});
+
+// GET route to fetch hours
+app.get('/api/washes/:id/hours', async (req, res) => {
+  try {
+    const hours = await getHoursByWashId(req.params.id);
+    res.status(200).json(hours);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch business hours" });
+  }
+});
+
+// POST route to update hours
+app.post('/api/washes/:id/hours', async (req, res) => {
+  const { hours } = req.body;
+  const washId = req.params.id;
+
+  if (!Array.isArray(hours)) {
+    return res.status(400).json({ error: "Invalid hours data format" });
+  }
+
+  try {
+    await updateBusinessHours(washId, hours);
+    console.log(`[DB] Updated business hours for Wash ID: ${washId}`);
+    res.status(200).json({ message: "Hours updated successfully" });
+  } catch (error) {
+    console.error("Update Hours Error:", error);
+    res.status(500).json({ error: "Failed to update business hours" });
   }
 });
 

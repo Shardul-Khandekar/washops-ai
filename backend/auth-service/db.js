@@ -37,6 +37,18 @@ db.serialize(() => {
     )
   `);
 
+  db.run(`
+  CREATE TABLE IF NOT EXISTS business_hours (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    wash_id INTEGER,
+    day_of_week TEXT, -- 'Monday', 'Tuesday', etc.
+    open_time TEXT,   -- '08:00'
+    close_time TEXT,  -- '18:00'
+    is_closed BOOLEAN DEFAULT 0,
+    FOREIGN KEY(wash_id) REFERENCES car_washes(id)
+  )
+`);
+
 });
 
 // Function to save a new user - sign up
@@ -134,6 +146,47 @@ const updateWashNumber = (id, twilioNumber) => {
   });
 };
 
+// Fetch hours for a specific wash
+const getHoursByWashId = (washId) => {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT * FROM business_hours WHERE wash_id = ?`;
+    db.all(query, [washId], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+};
+
+// Update hours using a transaction-like approach (Delete then Insert)
+const updateBusinessHours = (washId, hoursArray) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(() => {
+      // 1. Clear existing hours for this wash
+      db.run(`DELETE FROM business_hours WHERE wash_id = ?`, [washId], (err) => {
+        if (err) return reject(err);
+      });
+
+      // 2. Prepare the insert statement
+      const stmt = db.prepare(`
+        INSERT INTO business_hours (wash_id, day_of_week, open_time, close_time, is_closed)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+
+      // 3. Insert each day's record
+      hoursArray.forEach((h) => {
+        stmt.run(
+          [washId, h.day_of_week, h.open_time, h.close_time, h.is_closed ? 1 : 0]
+        );
+      });
+
+      stmt.finalize((err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+  });
+};
+
 // Export functions
 module.exports = { 
   saveUser, 
@@ -143,5 +196,7 @@ module.exports = {
   createCarWash, 
   getWashesByOwner, 
   getWashById,
-  updateWashNumber
+  updateWashNumber,
+  getHoursByWashId,
+  updateBusinessHours
 };
