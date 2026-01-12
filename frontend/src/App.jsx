@@ -3,6 +3,7 @@ import { Box, CssBaseline } from '@mui/material';
 import SignUp from './pages/SignUp';
 import Login from './pages/Login';
 import Home from './pages/Home';
+import HomePage from './pages/HomePage';
 
 function App() {
   return (
@@ -19,11 +20,19 @@ function App() {
         justifyContent: 'center' 
       }}>
       <Routes>
-        {/* Default to Home if someone just hits the base URL */}
-        <Route path="/" element={<Navigate to="/home" />} />
-        <Route path="/home" element={<Home />} />
+        {/* Base path / shows the Home/Landing page */}
+        <Route path="/" element={<Home />} />
+
+        {/* Auth routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+
+        {/* The Portal Dashboard */}
+        <Route path="/homepage" element={<HomePage />} />
+
+        {/* Catch-all: Redirect unknown paths back to landing page */}
+        <Route path="*" element={<Navigate to="/" />} />
+        
       </Routes>
       </Box>
     </Router>

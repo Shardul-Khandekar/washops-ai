@@ -1,11 +1,30 @@
 import React, { useState } from 'react';
 import { Container, Box, Typography, TextField, Button, Paper, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:5001/api/login', { email, password });
+
+      console.log("Login response:", response);
+      
+      if (response.status === 200) {
+        // Store user session into Local Storage
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        navigate('/homepage');
+      }
+    } catch (error) {
+      alert(error.response?.data?.error || "Login failed");
+    }
+  };
+  
 
   return (
     <Container component="main" maxWidth="xs">
@@ -27,7 +46,7 @@ function Login() {
           Sign in
         </Typography>
         
-        <Box component="form" sx={{ width: '100%' }}>
+        <Box component="form" onSubmit={handleLogin} sx={{ width: '100%' }}>
           <TextField
             margin="normal"
             required
@@ -56,10 +75,10 @@ function Login() {
             >
               Create account
             </Link>
-            <Button
+            <Button 
+              type="submit"
               variant="contained"
               sx={{ px: 3, py: 1, textTransform: 'none', borderRadius: 1.5 }}
-              onClick={() => console.log("Login clicked")}
             >
               Login
             </Button>

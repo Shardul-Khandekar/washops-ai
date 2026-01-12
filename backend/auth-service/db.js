@@ -16,6 +16,7 @@ db.serialize(() => {
   `);
 });
 
+// Function to save a new user - sign up
 const saveUser = (user) => {
   return new Promise((resolve, reject) => {
     const query = `INSERT INTO users (email, password) VALUES (?, ?)`;
@@ -32,4 +33,16 @@ const saveUser = (user) => {
   });
 };
 
-module.exports = { saveUser };
+// Get user by email - login
+const getUserByEmail = (email) => {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT * FROM users WHERE email = ?`;
+    db.get(query, [email], (err, row) => {
+      if (err) reject(err);
+      else resolve(row);
+    });
+  });
+};
+
+// Export functions
+module.exports = { saveUser, getUserByEmail };
