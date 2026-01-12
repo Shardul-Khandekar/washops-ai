@@ -14,6 +14,16 @@ db.serialize(() => {
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  db.run(`
+  CREATE TABLE IF NOT EXISTS user_numbers (
+    email TEXT,
+    twilioNumber TEXT NOT NULL,
+    assignedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(email) REFERENCES users(email)
+  )
+`);
+
 });
 
 // Function to save a new user - sign up
@@ -44,5 +54,16 @@ const getUserByEmail = (email) => {
   });
 };
 
+// Function to save Twilio number
+const saveUserNumber = (email, number) => {
+  return new Promise((resolve, reject) => {
+    const query = `INSERT INTO user_numbers (email, twilioNumber) VALUES (?, ?)`;
+    db.run(query, [email, number], function(err) {
+      if (err) reject(err);
+      else resolve({ id: this.lastID });
+    });
+  });
+};
+
 // Export functions
-module.exports = { saveUser, getUserByEmail };
+module.exports = { saveUser, getUserByEmail, saveUserNumber };

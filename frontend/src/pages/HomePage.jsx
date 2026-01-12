@@ -23,12 +23,12 @@ function HomePage() {
   const generateTwilioNumber = async () => {
     setLoading(true);
     try {
-      // MOCKING THE BACKEND CALL
-      // Replace with 'http://localhost:5001/api/twilio/provision' later
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate 2s delay
-      
-      const mockNumber = "+1 (555) 012-3456";
-      setTwilioNumber(mockNumber);
+
+        const response = await axios.post('http://localhost:5001/api/twilio/provision', {
+          email: user.email // Send user email from stored user data
+        });
+
+      setTwilioNumber(response.data.twilioNumber);
     } catch (error) {
       console.error("Failed to generate number", error);
     } finally {
