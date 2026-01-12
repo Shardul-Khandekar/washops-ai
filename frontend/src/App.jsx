@@ -4,6 +4,7 @@ import SignUp from './pages/SignUp';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import HomePage from './pages/HomePage';
+import WashDetails from './pages/WashDetails';
 
 function App() {
   return (
@@ -29,6 +30,9 @@ function App() {
 
         {/* The Portal Dashboard */}
         <Route path="/homepage" element={<HomePage />} />
+
+        {/* Car wash details */}
+        <Route path="/wash/:id" element={<WashDetails />} />
 
         {/* Catch-all: Redirect unknown paths back to landing page */}
         <Route path="*" element={<Navigate to="/" />} />

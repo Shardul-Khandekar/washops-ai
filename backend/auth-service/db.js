@@ -24,6 +24,19 @@ db.serialize(() => {
   )
 `);
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS car_washes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      owner_email TEXT,
+      name TEXT NOT NULL,
+      address TEXT,
+      zipCode TEXT,
+      twilioNumber TEXT UNIQUE,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(owner_email) REFERENCES users(email)
+    )
+  `);
+
 });
 
 // Function to save a new user - sign up
@@ -77,5 +90,58 @@ const getNumberByEmail = (email) => {
   });
 };
 
+// Function to create a new car wash location
+const createCarWash = (owner_email, name, address, zipCode) => {
+  return new Promise((resolve, reject) => {
+    const query = `INSERT INTO car_washes (owner_email, name, address, zipCode) VALUES (?, ?, ?, ?)`;
+    db.run(query, [owner_email, name, address, zipCode], function(err) {
+      if (err) reject(err);
+      else resolve({ id: this.lastID });
+    });
+  });
+};
+
+// Function to fetch all locations for a specific owner
+const getWashesByOwner = (email) => {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT * FROM car_washes WHERE owner_email = ?`;
+    db.all(query, [email], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+};
+
+// Function to fetch a single location's details
+const getWashById = (id) => {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT * FROM car_washes WHERE id = ?`;
+    db.get(query, [id], (err, row) => {
+      if (err) reject(err);
+      else resolve(row);
+    });
+  });
+};
+
+// Function to update a car wash with a Twilio number
+const updateWashNumber = (id, twilioNumber) => {
+  return new Promise((resolve, reject) => {
+    const query = `UPDATE car_washes SET twilioNumber = ? WHERE id = ?`;
+    db.run(query, [twilioNumber, id], function(err) {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+};
+
 // Export functions
-module.exports = { saveUser, getUserByEmail, saveUserNumber, getNumberByEmail };
+module.exports = { 
+  saveUser, 
+  getUserByEmail, 
+  saveUserNumber, 
+  getNumberByEmail, 
+  createCarWash, 
+  getWashesByOwner, 
+  getWashById,
+  updateWashNumber
+};
