@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Container, Box, Typography, Paper, Button, 
-  Divider, Alert, CircularProgress, Grid, TextField, Switch, FormControlLabel 
+  Divider, CircularProgress, Grid, TextField, Switch, FormControlLabel, Alert 
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LoadingButton from '@mui/lab/LoadingButton';
 import axios from 'axios';
 
@@ -18,163 +16,99 @@ function WashDetails() {
   const [wash, setWash] = useState(null);
   const [loading, setLoading] = useState(true);
   const [provisioning, setProvisioning] = useState(false);
-  const [savingHours, setSavingHours] = useState(false);
-  
-  // Initialize hours state
-  const [hours, setHours] = useState(
-    DAYS_OF_WEEK.map(day => ({ day_of_week: day, open_time: '08:00', close_time: '18:00', is_closed: false }))
-  );
+  const [hours, setHours] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch Wash Details and Business Hours in parallel
         const [washRes, hoursRes] = await Promise.all([
           axios.get(`http://localhost:5001/api/washes/${id}`),
           axios.get(`http://localhost:5001/api/washes/${id}/hours`)
         ]);
-
         setWash(washRes.data);
-        
-        // If hours exist in DB, override defaults
-        if (hoursRes.data && hoursRes.data.length > 0) {
-          setHours(hoursRes.data);
-        }
-      } catch (error) {
-        console.error("Error fetching data", error);
-      } finally {
-        setLoading(false);
-      }
+        if (hoursRes.data?.length > 0) setHours(hoursRes.data);
+        else setHours(DAYS_OF_WEEK.map(day => ({ day_of_week: day, open_time: '08:00', close_time: '18:00', is_closed: false })));
+      } catch (error) { console.error(error); } 
+      finally { setLoading(false); }
     };
     fetchData();
   }, [id]);
 
-  const handleHoursChange = (index, field, value) => {
-    const updatedHours = [...hours];
-    updatedHours[index][field] = value;
-    setHours(updatedHours);
-  };
-
-  const saveBusinessHours = async () => {
-    setSavingHours(true);
-    try {
-      await axios.post(`http://localhost:5001/api/washes/${id}/hours`, { hours });
-      alert("Business hours updated successfully!");
-    } catch (error) {
-      alert("Failed to save business hours.");
-    } finally {
-      setSavingHours(false);
-    }
-  };
-
-  const handleGenerateNumber = async () => {
-    setProvisioning(true);
-    try {
-      const response = await axios.post('http://localhost:5001/api/twilio/provision', {
-        wash_id: id,
-        email: JSON.parse(localStorage.getItem('user')).email
-      });
-      setWash({ ...wash, twilioNumber: response.data.twilioNumber });
-    } catch (error) {
-      alert("Failed to provision number.");
-    } finally {
-      setProvisioning(false);
-    }
-  };
-
-  if (loading) return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>
-  );
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
-      <Box sx={{ mb: 2 }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/homepage')}>
-          Back to Locations
+    <Box sx={{ backgroundColor: '#f8f9fa', minHeight: '100vh', py: 4 }}>
+      <Container maxWidth="lg">
+        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/homepage')} sx={{ mb: 3, color: '#5f6368', textTransform: 'none' }}>
+          Back to Dashboard
         </Button>
-      </Box>
 
-      {/* Location Header */}
-      <Paper variant="outlined" sx={{ p: 4, borderRadius: 2, mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 500 }}>{wash.name}</Typography>
-        <Typography color="textSecondary">{wash.address}, {wash.zipCode}</Typography>
-      </Paper>
-
-      {/* Business Hours Section */}
-      <Paper variant="outlined" sx={{ p: 4, borderRadius: 2, mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <AccessTimeIcon sx={{ mr: 1, color: '#1a73e8' }} />
-          <Typography variant="h6">Business Hours</Typography>
-        </Box>
-        
-        <Grid container spacing={2}>
-          {hours.map((item, index) => (
-            <Grid item xs={12} key={item.day_of_week} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography sx={{ width: 100, fontWeight: 500 }}>{item.day_of_week}</Typography>
+        <Grid container spacing={3}>
+          {/* LEFT COLUMN */}
+          <Grid item xs={12} md={5}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               
-              <TextField
-                type="time"
-                size="small"
-                value={item.open_time}
-                disabled={item.is_closed}
-                onChange={(e) => handleHoursChange(index, 'open_time', e.target.value)}
-                InputLabelProps={{ shrink: true }}
-              />
-              <Typography>to</Typography>
-              <TextField
-                type="time"
-                size="small"
-                value={item.close_time}
-                disabled={item.is_closed}
-                onChange={(e) => handleHoursChange(index, 'close_time', e.target.value)}
-                InputLabelProps={{ shrink: true }}
-              />
-              
-              <FormControlLabel
-                control={
-                  <Switch 
-                    checked={!item.is_closed} 
-                    onChange={(e) => handleHoursChange(index, 'is_closed', !e.target.checked)} 
-                  />
-                }
-                label={item.is_closed ? "Closed" : "Open"}
-                sx={{ ml: 2 }}
-              />
-            </Grid>
-          ))}
-        </Grid>
+              {/* Box 1: Name & Address */}
+              <Paper variant="outlined" sx={{ p: 3, borderRadius: '8px', borderColor: '#dadce0' }}>
+                <Typography variant="h5" sx={{ fontWeight: 500, color: '#202124' }}>{wash.name}</Typography>
+                <Typography variant="body1" color="textSecondary" sx={{ mt: 1 }}>{wash.address}, {wash.zipCode}</Typography>
+              </Paper>
 
-        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
-          <LoadingButton 
-            loading={savingHours} 
-            variant="contained" 
-            onClick={saveBusinessHours}
-          >
-            Save Business Hours
-          </LoadingButton>
-        </Box>
-      </Paper>
-
-      {/* Twilio Section */}
-      <Paper variant="outlined" sx={{ p: 4, borderRadius: 2 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>Communication Settings</Typography>
-        <Box sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 2, backgroundColor: '#f8f9fa', textAlign: 'center' }}>
-          <PhoneIphoneIcon sx={{ fontSize: 40, color: '#1a73e8', mb: 1 }} />
-          {wash.twilioNumber ? (
-            <Alert severity="success" sx={{ mt: 2, justifyContent: 'center' }}>
-              Dedicated Number: <strong>{wash.twilioNumber}</strong>
-            </Alert>
-          ) : (
-            <Box>
-              <Typography variant="body1" sx={{ mb: 2 }}>No business number assigned.</Typography>
-              <LoadingButton loading={provisioning} variant="contained" onClick={handleGenerateNumber}>
-                Provision Number
-              </LoadingButton>
+              {/* Box 2: Business Hours */}
+              <Paper variant="outlined" sx={{ p: 3, borderRadius: '8px', borderColor: '#dadce0' }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: '#3c4043' }}>Business Hours</Typography>
+                {hours.map((item, index) => (
+                  <Box key={item.day_of_week} sx={{ display: 'flex', alignItems: 'center', mb: 1.5, justifyContent: 'space-between' }}>
+                    <Typography sx={{ width: 85, fontSize: '0.9rem' }}>{item.day_of_week}</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <TextField type="time" size="small" value={item.open_time} disabled={item.is_closed} sx={{ width: 105 }} />
+                      <Typography variant="caption">—</Typography>
+                      <TextField type="time" size="small" value={item.close_time} disabled={item.is_closed} sx={{ width: 105 }} />
+                    </Box>
+                    <Switch checked={!item.is_closed} size="small" />
+                  </Box>
+                ))}
+                <Button fullWidth variant="contained" sx={{ mt: 2, textTransform: 'none', backgroundColor: '#1a73e8' }}>
+                  Update Hours
+                </Button>
+              </Paper>
             </Box>
-          )}
-        </Box>
-      </Paper>
-    </Container>
+          </Grid>
+
+          {/* RIGHT COLUMN */}
+          <Grid item xs={12} md={7}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              
+              {/* Box 3: Phone Number */}
+              <Paper variant="outlined" sx={{ p: 3, borderRadius: '8px', borderColor: '#dadce0' }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>Phone Number</Typography>
+                {wash.twilioNumber ? (
+                  <Typography variant="h6" sx={{ color: '#188038', letterSpacing: 1 }}>{wash.twilioNumber}</Typography>
+                ) : (
+                  <Button variant="contained" disableElevation sx={{ textTransform: 'none', backgroundColor: '#1a73e8' }}>
+                    Generate Number
+                  </Button>
+                )}
+              </Paper>
+
+              {/* Box 4: Services & Pricing */}
+              <Paper variant="outlined" sx={{ p: 3, borderRadius: '8px', borderColor: '#dadce0', minHeight: '300px' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Services & Pricing</Typography>
+                  <Button size="small" variant="outlined" sx={{ textTransform: 'none' }}>+ Add Service</Button>
+                </Box>
+                <Divider sx={{ mb: 2 }} />
+                <Box sx={{ textAlign: 'center', mt: 10 }}>
+                  <Typography color="textSecondary">No services listed yet.</Typography>
+                  <Typography variant="caption">Add services to help the AI answer customer questions.</Typography>
+                </Box>
+              </Paper>
+
+            </Box>
+          </Grid>
+        </Grid>
+      </Container>
+    </Box>
   );
 }
 
