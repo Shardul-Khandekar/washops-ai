@@ -17,6 +17,7 @@ function HomePage() {
       navigate('/login');
     } else {
       setUser(savedUser);
+      setTwilioNumber(savedUser.twilioNumber || null);
     }
   }, [navigate]);
 

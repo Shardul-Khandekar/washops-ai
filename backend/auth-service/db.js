@@ -65,5 +65,17 @@ const saveUserNumber = (email, number) => {
   });
 };
 
+// Get twilio number by email
+const getNumberByEmail = (email) => {
+  console.log("Fetching Twilio number for:", email);
+  return new Promise((resolve, reject) => {
+    const query = `SELECT twilioNumber FROM user_numbers WHERE email = ?`;
+    db.get(query, [email], (err, row) => {
+      if (err) reject(err);
+      else resolve(row ? row.twilioNumber : null);
+    });
+  });
+};
+
 // Export functions
-module.exports = { saveUser, getUserByEmail, saveUserNumber };
+module.exports = { saveUser, getUserByEmail, saveUserNumber, getNumberByEmail };

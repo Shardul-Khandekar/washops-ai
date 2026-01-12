@@ -1,6 +1,7 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { saveUser, getUserByEmail, saveUserNumber } = require('./db');
+const { saveUser, getUserByEmail, saveUserNumber, getNumberByEmail } = require('./db');
 const { provisionNewNumber } = require('./twilio_helper');
 
 const app = express();
@@ -43,7 +44,15 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ error: "Incorrect password" });
         }
 
-        res.status(200).json({ message: "Login successful", user: { email: user.email } });
+        // After passing all checks check if they have a twilio number assigned
+        const existingNumber = await getNumberByEmail(email);
+
+        res.status(200).json({ 
+            user: { 
+                email: user.email,
+                twilioNumber: existingNumber
+            }
+        });
     } catch (error) {
         res.status(500).json({ error: "Server error" });
     }
@@ -72,5 +81,5 @@ app.post('/api/twilio/provision', async (req, res) => {
     }
 });
 
-const PORT = 5001;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`WashOps Auth (SQLite) running on port ${PORT}`));
