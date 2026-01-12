@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Box, Typography, TextField, Button, Paper, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function SignUp() {
 
@@ -8,9 +9,23 @@ function SignUp() {
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
-    const handleSignUp = (e) => {
+    const handleSignUp = async (e) => {
         e.preventDefault();
-        console.log("WashOps Sign Up:", { email, password });
+        try {
+
+            const response = await axios.post('http://localhost:5000/api/signup', {
+                email,
+                password
+            });
+
+            if (response.status === 201) {
+                alert("Account created successfully!");
+                navigate('/login');
+            }
+        } catch (error) {
+            console.error("Signup error:", error);
+            alert("Failed to sign up. Is the backend running?");
+        }
     };
 
     return (
