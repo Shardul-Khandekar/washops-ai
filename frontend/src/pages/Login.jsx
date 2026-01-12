@@ -7,29 +7,65 @@ function Login() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    console.log("WashOps Login:", { email, password });
-  };
-
   return (
     <Container component="main" maxWidth="xs">
-      <Box sx={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Paper elevation={3} sx={{ padding: 4, width: '100%', borderRadius: 2 }}>
-          <Typography component="h1" variant="h5" sx={{ textAlign: 'center', mb: 3, fontWeight: 'bold', color: '#1976d2' }}>
-            WashOps
-          </Typography>
-          <Typography component="h2" variant="h6" sx={{ mb: 2 }}>Sign in</Typography>
-          <Box component="form" onSubmit={handleLogin}>
-            <TextField margin="normal" required fullWidth label="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <TextField margin="normal" required fullWidth label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-            <Button type="submit" fullWidth variant="contained" color="success" sx={{ mt: 3, mb: 2 }}>Sign In</Button>
-            <Link href="#" onClick={() => navigate('/signup')} variant="body2">
-              {"Don't have an account? Sign Up"}
+      <Paper 
+        variant="outlined" // Google uses a thin border instead of a shadow
+        sx={{ 
+          p: 4, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center',
+          borderRadius: 2,
+          backgroundColor: '#fff' 
+        }}
+      >
+        <Typography component="h1" variant="h5" sx={{ color: '#1a73e8', fontWeight: 500, mb: 1 }}>
+          WashOps
+        </Typography>
+        <Typography variant="h6" sx={{ mb: 3 }}>
+          Sign in
+        </Typography>
+        
+        <Box component="form" sx={{ width: '100%' }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Email or phone"
+            variant="outlined"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Enter your password"
+            type="password"
+            variant="outlined"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4, alignItems: 'center' }}>
+            <Link 
+              component="button" 
+              variant="body2" 
+              onClick={() => navigate('/signup')}
+              sx={{ textDecoration: 'none', fontWeight: 500 }}
+            >
+              Create account
             </Link>
+            <Button
+              variant="contained"
+              sx={{ px: 3, py: 1, textTransform: 'none', borderRadius: 1.5 }}
+              onClick={() => console.log("Login clicked")}
+            >
+              Login
+            </Button>
           </Box>
-        </Paper>
-      </Box>
+        </Box>
+      </Paper>
     </Container>
   );
 }

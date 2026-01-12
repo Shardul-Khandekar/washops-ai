@@ -12,14 +12,14 @@ function Home() {
           WashOps
         </Typography>
         <Typography variant="h6" color="textSecondary" paragraph>
-          The intelligent operating system for your car wash business.
+          AI-powered assistant to streamline your car wash business operations.
         </Typography>
         <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
           <Button variant="contained" size="large" onClick={() => navigate('/login')}>
-            Go to Portal
+            Login
           </Button>
           <Button variant="outlined" size="large" onClick={() => navigate('/signup')}>
-            Register Business
+            Sign Up
           </Button>
         </Box>
       </Paper>
