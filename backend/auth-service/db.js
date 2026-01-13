@@ -49,6 +49,18 @@ db.serialize(() => {
   )
 `);
 
+  db.run(`
+  CREATE TABLE IF NOT EXISTS services (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    wash_id INTEGER,
+    name TEXT NOT NULL,
+    price REAL NOT NULL,
+    duration_minutes INTEGER,
+    description TEXT, -- This will also be sent to ChromaDB
+    FOREIGN KEY(wash_id) REFERENCES car_washes(id)
+  )
+`);
+
 });
 
 // Function to save a new user - sign up
