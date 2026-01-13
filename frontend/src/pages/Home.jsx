@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Toolbar, Box, CssBaseline } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import * as S from '../Layout.styles.js';
+import * as S from '../styles/Layout.styles.js';
+import SignUp from './SignUp.jsx';
 
 function Home() {
   const navigate = useNavigate();
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -17,7 +19,7 @@ function Home() {
           </S.LogoText>
 
           <Box sx={{ display: 'flex', gap: 1.5 }}>
-            <S.NavButton onClick={() => navigate('/signup')}>
+            <S.NavButton onClick={() => setIsSignUpOpen(true)}>
               Sign Up
             </S.NavButton>
             <S.NavButton 
@@ -29,6 +31,8 @@ function Home() {
           </Box>
         </Toolbar>
       </S.StyledAppBar>
+
+      <SignUp open={isSignUpOpen} onClose={() => setIsSignUpOpen(false)} />
 
       <Box component="main" sx={{ pt: '60px', flexGrow: 1 }}>
         {/* Next component goes here */}
