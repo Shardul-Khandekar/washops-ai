@@ -11,7 +11,9 @@ const {
     getWashById,
     updateWashNumber,
     getHoursByWashId,
-    updateBusinessHours
+    updateBusinessHours,
+    createService, 
+    getServicesByWashId
 } = require('./db');
 
 const { provisionNewNumber } = require('./twilio_helper');
@@ -158,6 +160,30 @@ app.post('/api/washes/:id/hours', async (req, res) => {
   } catch (error) {
     console.error("Update Hours Error:", error);
     res.status(500).json({ error: "Failed to update business hours" });
+  }
+});
+
+// Route to fetch services for the UI grid
+app.get('/api/washes/:id/services', async (req, res) => {
+  try {
+    const services = await getServicesByWashId(req.params.id);
+    res.status(200).json(services);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch services" });
+  }
+});
+
+// Route to add a new service and sync with RAG
+app.post('/api/washes/:id/services', async (req, res) => {
+  const { name, price, description, duration_minutes } = req.body; // Added duration_minutes
+  const wash_id = req.params.id;
+
+  try {
+    // Ensure you update your createService call to include the new column
+    const result = await createService(wash_id, name, price, description, duration_minutes);
+    res.status(201).json({ id: result.id, message: "Service added" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to add service" });
   }
 });
 

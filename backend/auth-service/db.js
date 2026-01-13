@@ -199,6 +199,28 @@ const updateBusinessHours = (washId, hoursArray) => {
   });
 };
 
+// Function to add a new service
+const createService = (wash_id, name, price, description) => {
+  return new Promise((resolve, reject) => {
+    const query = `INSERT INTO services (wash_id, name, price, description) VALUES (?, ?, ?, ?)`;
+    db.run(query, [wash_id, name, price, description], function(err) {
+      if (err) reject(err);
+      else resolve({ id: this.lastID });
+    });
+  });
+};
+
+// Function to get all services for a specific wash
+const getServicesByWashId = (washId) => {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT * FROM services WHERE wash_id = ?`;
+    db.all(query, [washId], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+};
+
 // Export functions
 module.exports = { 
   saveUser, 
@@ -210,5 +232,7 @@ module.exports = {
   getWashById,
   updateWashNumber,
   getHoursByWashId,
-  updateBusinessHours
+  updateBusinessHours,
+  createService,
+  getServicesByWashId
 };
