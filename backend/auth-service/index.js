@@ -13,7 +13,8 @@ const {
     getHoursByWashId,
     updateBusinessHours,
     createService, 
-    getServicesByWashId
+    getServicesByWashId,
+    deleteService
 } = require('./db');
 
 const { provisionNewNumber } = require('./twilio_helper');
@@ -184,6 +185,16 @@ app.post('/api/washes/:id/services', async (req, res) => {
     res.status(201).json({ id: result.id, message: "Service added" });
   } catch (error) {
     res.status(500).json({ error: "Failed to add service" });
+  }
+});
+
+// Route to delete a service
+app.delete('/api/services/:id', async (req, res) => {
+  try {
+    await deleteService(req.params.id);
+    res.status(200).json({ message: "Service deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete service" });
   }
 });
 

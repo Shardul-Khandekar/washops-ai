@@ -200,10 +200,10 @@ const updateBusinessHours = (washId, hoursArray) => {
 };
 
 // Function to add a new service
-const createService = (wash_id, name, price, description) => {
+const createService = (wash_id, name, price, description, duration_minutes) => {
   return new Promise((resolve, reject) => {
-    const query = `INSERT INTO services (wash_id, name, price, description) VALUES (?, ?, ?, ?)`;
-    db.run(query, [wash_id, name, price, description], function(err) {
+    const query = `INSERT INTO services (wash_id, name, price, description, duration_minutes) VALUES (?, ?, ?, ?, ?)`;
+    db.run(query, [wash_id, name, price, description, duration_minutes], function(err) {
       if (err) reject(err);
       else resolve({ id: this.lastID });
     });
@@ -221,6 +221,17 @@ const getServicesByWashId = (washId) => {
   });
 };
 
+// Function to delete a service
+const deleteService = (serviceId) => {
+  return new Promise((resolve, reject) => {
+    const query = `DELETE FROM services WHERE id = ?`;
+    db.run(query, [serviceId], function(err) {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+};
+
 // Export functions
 module.exports = { 
   saveUser, 
@@ -234,5 +245,6 @@ module.exports = {
   getHoursByWashId,
   updateBusinessHours,
   createService,
-  getServicesByWashId
+  getServicesByWashId,
+  deleteService
 };
