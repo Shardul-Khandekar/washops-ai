@@ -32,11 +32,12 @@ function Home() {
         </Toolbar>
       </S.StyledAppBar>
 
-      <SignUp open={isSignUpOpen} onClose={() => setIsSignUpOpen(false)} />
-
       <Box component="main" sx={{ pt: '60px', flexGrow: 1 }}>
         {/* Next component goes here */}
       </Box>
+
+      <SignUp open={isSignUpOpen} onClose={() => setIsSignUpOpen(false)} />
+
     </Box>
   );
 }

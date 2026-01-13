@@ -15,51 +15,51 @@ db.serialize(() => {
     )
   `);
 
-  db.run(`
-  CREATE TABLE IF NOT EXISTS user_numbers (
-    email TEXT,
-    twilioNumber TEXT NOT NULL,
-    assignedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(email) REFERENCES users(email)
-  )
-`);
+//   db.run(`
+//   CREATE TABLE IF NOT EXISTS user_numbers (
+//     email TEXT,
+//     twilioNumber TEXT NOT NULL,
+//     assignedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+//     FOREIGN KEY(email) REFERENCES users(email)
+//   )
+// `);
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS car_washes (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      owner_email TEXT,
-      name TEXT NOT NULL,
-      address TEXT,
-      zipCode TEXT,
-      twilioNumber TEXT UNIQUE,
-      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(owner_email) REFERENCES users(email)
-    )
-  `);
+//   db.run(`
+//     CREATE TABLE IF NOT EXISTS car_washes (
+//       id INTEGER PRIMARY KEY AUTOINCREMENT,
+//       owner_email TEXT,
+//       name TEXT NOT NULL,
+//       address TEXT,
+//       zipCode TEXT,
+//       twilioNumber TEXT UNIQUE,
+//       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+//       FOREIGN KEY(owner_email) REFERENCES users(email)
+//     )
+//   `);
 
-  db.run(`
-  CREATE TABLE IF NOT EXISTS business_hours (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    wash_id INTEGER,
-    day_of_week TEXT, -- 'Monday', 'Tuesday', etc.
-    open_time TEXT,   -- '08:00'
-    close_time TEXT,  -- '18:00'
-    is_closed BOOLEAN DEFAULT 0,
-    FOREIGN KEY(wash_id) REFERENCES car_washes(id)
-  )
-`);
+//   db.run(`
+//   CREATE TABLE IF NOT EXISTS business_hours (
+//     id INTEGER PRIMARY KEY AUTOINCREMENT,
+//     wash_id INTEGER,
+//     day_of_week TEXT, -- 'Monday', 'Tuesday', etc.
+//     open_time TEXT,   -- '08:00'
+//     close_time TEXT,  -- '18:00'
+//     is_closed BOOLEAN DEFAULT 0,
+//     FOREIGN KEY(wash_id) REFERENCES car_washes(id)
+//   )
+// `);
 
-  db.run(`
-  CREATE TABLE IF NOT EXISTS services (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    wash_id INTEGER,
-    name TEXT NOT NULL,
-    price REAL NOT NULL,
-    duration_minutes INTEGER,
-    description TEXT, -- This will also be sent to ChromaDB
-    FOREIGN KEY(wash_id) REFERENCES car_washes(id)
-  )
-`);
+//   db.run(`
+//   CREATE TABLE IF NOT EXISTS services (
+//     id INTEGER PRIMARY KEY AUTOINCREMENT,
+//     wash_id INTEGER,
+//     name TEXT NOT NULL,
+//     price REAL NOT NULL,
+//     duration_minutes INTEGER,
+//     description TEXT, -- This will also be sent to ChromaDB
+//     FOREIGN KEY(wash_id) REFERENCES car_washes(id)
+//   )
+// `);
 
 });
 

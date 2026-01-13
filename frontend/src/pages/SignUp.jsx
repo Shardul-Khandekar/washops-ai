@@ -25,7 +25,7 @@ function SignUp({ open, onClose }) {
     };
 
     return (
-        <S.Overlay onClick={onClose}>
+        <S.Overlay>
             {/* Prevent clicks inside the box from closing the overlay */}
             <S.AuthContainer onClick={(e) => e.stopPropagation()}>
                 <IconButton 
