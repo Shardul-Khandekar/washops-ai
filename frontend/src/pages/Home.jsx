@@ -1,29 +1,39 @@
 import React from 'react';
-import { Container, Typography, Button, Paper, Box } from '@mui/material';
+import { Toolbar, Box, CssBaseline } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import * as S from '../Layout.styles.js';
 
 function Home() {
   const navigate = useNavigate();
 
   return (
-    <Container maxWidth="md">
-      <Paper elevation={1} sx={{ p: 5, textAlign: 'center', borderRadius: 2 }}>
-        <Typography variant="h3" gutterBottom sx={{ color: '#1976d2', fontWeight: 'bold' }}>
-          WashOps
-        </Typography>
-        <Typography variant="h6" color="textSecondary" paragraph>
-          AI-powered assistant to streamline your car wash business operations.
-        </Typography>
-        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
-          <Button variant="contained" size="large" onClick={() => navigate('/login')}>
-            Login
-          </Button>
-          <Button variant="outlined" size="large" onClick={() => navigate('/signup')}>
-            Sign Up
-          </Button>
-        </Box>
-      </Paper>
-    </Container>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <CssBaseline />
+      
+      <S.StyledAppBar position="fixed">
+        <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
+          <S.LogoText onClick={() => navigate('/')}>
+            WashOps
+          </S.LogoText>
+
+          <Box sx={{ display: 'flex', gap: 1.5 }}>
+            <S.NavButton onClick={() => navigate('/signup')}>
+              Sign Up
+            </S.NavButton>
+            <S.NavButton 
+              variant="contained" 
+              onClick={() => navigate('/login')}
+            >
+              Login
+            </S.NavButton>
+          </Box>
+        </Toolbar>
+      </S.StyledAppBar>
+
+      <Box component="main" sx={{ pt: '60px', flexGrow: 1 }}>
+        {/* Next component goes here */}
+      </Box>
+    </Box>
   );
 }
 
