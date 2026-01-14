@@ -23,7 +23,7 @@ function SignUp({ open, onClose, onSwitchToLogin }) {
                 // Wait 2 seconds before closing the toast
                 setTimeout(() => {
                     setShowToast(false);
-                    onClose();
+                    onSwitchToLogin();
                 }, 2000);
             }
         } catch (error) {
