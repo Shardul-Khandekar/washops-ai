@@ -3,11 +3,13 @@ import { Box, Link, IconButton, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
 import * as S from '../styles/Auth.styles.js';
+import * as N from '../styles/Notification.styles.js';
 
-function SignUp({ open, onClose }) {
+function SignUp({ open, onClose, onSwitchToLogin }) {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showToast, setShowToast] = useState(false);
 
     if (!open) return null;
 
@@ -16,8 +18,13 @@ function SignUp({ open, onClose }) {
         try {
             const response = await axios.post('http://localhost:5001/api/signup', { email, password });
             if (response.status === 201) {
-                alert("Account created successfully!");
-                onClose(); // Close the box on success
+                setShowToast(true);
+
+                // Wait 2 seconds before closing the toast
+                setTimeout(() => {
+                    setShowToast(false);
+                    onClose();
+                }, 2000);
             }
         } catch (error) {
             console.error("Signup error:", error);
@@ -61,11 +68,18 @@ function SignUp({ open, onClose }) {
 
                     <Typography variant="body2" sx={{ textAlign: 'center', color: '#73726e' }}>
                         Already have an account?{' '}
-                        <Link href="#" onClick={(e) => { e.preventDefault(); /* Navigate logic */ }} sx={{ color: '#2383e2', textDecoration: 'none' }}>
+                        <Link href="#" onClick={(e) => { e.preventDefault(); onSwitchToLogin(); }} sx={{ color: '#2383e2', textDecoration: 'none' }}>
                             Sign In
                         </Link>
                     </Typography>
                 </Box>
+                {/* Custom Toast Notification */}
+                <N.ToastContainer visible={showToast}>
+                    <N.SuccessDot />
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        Account created successfully!
+                    </Typography>
+                </N.ToastContainer>
             </S.AuthContainer>
         </S.Overlay>
     );

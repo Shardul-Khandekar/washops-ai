@@ -1,92 +1,79 @@
 import React, { useState } from 'react';
-import { Container, Box, Typography, TextField, Button, Paper, Link } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Box, Link, IconButton, Typography } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import * as S from '../styles/Auth.styles.js';
 
-function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
+function Login({ open, onClose, onSwitchToSignUp }) {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post('http://localhost:5001/api/login', { email, password });
+    if (!open) return null;
 
-      console.log("Login response:", response);
-      
-      if (response.status === 200) {
-        // Store user session into Local Storage
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        navigate('/homepage');
-      }
-    } catch (error) {
-      alert(error.response?.data?.error || "Login failed");
-    }
-  };
-  
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post('http://localhost:5001/api/login', { email, password });
+            if (response.status === 200) {
+                localStorage.setItem('user', JSON.stringify(response.data.user));
+                onClose();
+                navigate('/homepage');
+            }
+        } catch (error) {
+            alert(error.response?.data?.error || "Login failed");
+        }
+    };
 
-  return (
-    <Container component="main" maxWidth="xs">
-      <Paper 
-        variant="outlined" // Google uses a thin border instead of a shadow
-        sx={{ 
-          p: 4, 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center',
-          borderRadius: 2,
-          backgroundColor: '#fff' 
-        }}
-      >
-        <Typography component="h1" variant="h5" sx={{ color: '#1a73e8', fontWeight: 500, mb: 1 }}>
-          WashOps
-        </Typography>
-        <Typography variant="h6" sx={{ mb: 3 }}>
-          Sign in
-        </Typography>
-        
-        <Box component="form" onSubmit={handleLogin} sx={{ width: '100%' }}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            label="Email or phone"
-            variant="outlined"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            label="Enter your password"
-            type="password"
-            variant="outlined"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4, alignItems: 'center' }}>
-            <Link 
-              component="button" 
-              variant="body2" 
-              onClick={() => navigate('/signup')}
-              sx={{ textDecoration: 'none', fontWeight: 500 }}
-            >
-              Create account
-            </Link>
-            <Button 
-              type="submit"
-              variant="contained"
-              sx={{ px: 3, py: 1, textTransform: 'none', borderRadius: 1.5 }}
-            >
-              Login
-            </Button>
-          </Box>
-        </Box>
-      </Paper>
-    </Container>
-  );
+    return (
+        <S.Overlay> {/* Removed onClick={onClose} so it stays open */}
+            <S.AuthContainer>
+                <IconButton 
+                    onClick={onClose} 
+                    sx={{ position: 'absolute', top: 12, right: 12, color: '#acaba9' }}
+                >
+                    <CloseIcon fontSize="small" />
+                </IconButton>
+
+                <S.Header>Sign in</S.Header>
+                <S.SubHeader>Use your WashOps Account</S.SubHeader>
+
+                <Box component="form" onSubmit={handleLogin}>
+                    <S.StyledTextField 
+                        fullWidth 
+                        placeholder="Email" 
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)} 
+                        required 
+                    />
+                    <S.StyledTextField 
+                        fullWidth 
+                        type="password" 
+                        placeholder="Password" 
+                        value={password} 
+                        onChange={(e) => setPassword(e.target.value)} 
+                        required 
+                    />
+                    
+                    <S.PrimaryButton type="submit" fullWidth variant="contained" sx={{ mt: 1, mb: 2 }}>
+                        Login
+                    </S.PrimaryButton>
+
+                    <Typography variant="body2" sx={{ textAlign: 'center', color: '#73726e' }}>
+                        New to WashOps?{' '}
+                        <Link 
+                            href="#" 
+                            onClick={(e) => { e.preventDefault(); onSwitchToSignUp(); }} 
+                            sx={{ color: '#2383e2', textDecoration: 'none', fontWeight: 600 }}
+                        >
+                            Create account
+                        </Link>
+                    </Typography>
+                </Box>
+            </S.AuthContainer>
+        </S.Overlay>
+    );
 }
 
 export default Login;
