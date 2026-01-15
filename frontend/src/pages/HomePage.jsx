@@ -1,145 +1,61 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Container, Typography, Button, Box, Paper, 
-  Grid, Card, CardActionArea, CardContent, Chip, 
-  Dialog, DialogTitle, DialogContent, DialogActions, TextField // Added Dialog & TextField
-} from '@mui/material';
-import axios from 'axios';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
+import { Box, Typography, List, ListItemIcon, ListItemText } from '@mui/material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import AddIcon from '@mui/icons-material/Add';
+import SettingsIcon from '@mui/icons-material/Settings';
+import * as S from '../styles/Dashboard.styles';
 
 function HomePage() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  // Modal and List State
-  const [open, setOpen] = useState(false);
-  const [newWash, setNewWash] = useState({ name: '', address: '', zipCode: '' });
-  const [washes, setWashes] = useState([]);
-
-  useEffect(() => {
-    const savedUser = JSON.parse(localStorage.getItem('user'));
-    if (!savedUser) {
-      navigate('/login');
-    } else {
-      setUser(savedUser);
-    }
-  }, [navigate]);
-
-  // Trigger fetch whenever the user object is set
-  useEffect(() => {
-    if (user?.email) {
-      fetchWashes();
-    }
-  }, [user]);
-
-  const fetchWashes = async () => {
-    try {
-      const response = await axios.get(`http://localhost:5001/api/washes?email=${user.email}`);
-      setWashes(response.data);
-    } catch (error) {
-      console.error("Error fetching washes:", error);
-    }
-  };
-
-  const handleSaveWash = async () => {
-    try {
-      await axios.post('http://localhost:5001/api/washes', { 
-        ...newWash, 
-        owner_email: user.email 
-      });
-      setOpen(false);
-      setNewWash({ name: '', address: '', zipCode: '' }); // Reset form
-      fetchWashes(); 
-    } catch (error) {
-      console.error("Error saving wash:", error);
-    }
-  };
-
-  if (!user) return null;
+  const [isAddLocationOpen, setAddLocationOpen] = useState(false);
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 600, color: '#202124' }}>
-          Business Locations
+    <Box sx={{ display: 'flex' }}>
+      {/* 1. The Sidebar */}
+      <S.SidebarContainer>
+        <S.SidebarHeader>
+          <Typography variant="body1" sx={{ fontWeight: 700 }}>
+            WashOps Workspace
+          </Typography>
+        </S.SidebarHeader>
+
+        <S.CreateButton 
+          startIcon={<AddIcon style={{ color: '#2383e2' }} />} 
+          onClick={() => setAddLocationOpen(true)}
+        >
+          Add Location
+        </S.CreateButton>
+
+        <List sx={{ px: 0 }}>
+          <S.NavItem active={true}>
+            <ListItemIcon><DashboardIcon fontSize="small" /></ListItemIcon>
+            <ListItemText primary="Business Locations" />
+          </S.NavItem>
+          
+          <S.NavItem>
+            <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
+            <ListItemText primary="Settings" />
+          </S.NavItem>
+        </List>
+      </S.SidebarContainer>
+
+      {/* 2. Main Page Content */}
+      <Box component="main" sx={{ 
+        flexGrow: 1, 
+        ml: '240px', // Matches sidebar width
+        p: 6, 
+        backgroundColor: '#ffffff',
+        minHeight: '100vh'
+      }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 4, color: '#37352f' }}>
+          Locations
         </Typography>
-        <Button variant="contained" onClick={() => setOpen(true)} sx={{ textTransform: 'none' }}>
-          + Add Location
-        </Button>
+        
+        {/* We will move your Grid of Car Washes here next */}
+        <Box sx={{ color: '#73726e', fontStyle: 'italic' }}>
+          Displaying your business locations...
+        </Box>
       </Box>
-
-      <Grid container spacing={3}>
-        {washes.map((wash) => (
-          <Grid item xs={12} sm={6} key={wash.id}>
-            <Card variant="outlined" sx={{ borderRadius: 2, '&:hover': { boxShadow: 3 } }}>
-              <CardActionArea onClick={() => navigate(`/wash/${wash.id}`)}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <Typography variant="h6" sx={{ fontWeight: 500, mb: 1 }}>
-                      {wash.name}
-                    </Typography>
-                    <Chip 
-                      label={wash.twilioNumber ? "Active" : "Action Required"} 
-                      color={wash.twilioNumber ? "success" : "warning"}
-                      size="small"
-                      variant="outlined"
-                    />
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-                    <LocationOnIcon sx={{ fontSize: 16, mr: 0.5 }} />
-                    <Typography variant="body2">
-                      {wash.address}, {wash.zipCode}
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-
-      {/* --- ADD LOCATION MODAL --- */}
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 600 }}>Add New Car Wash</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField
-              label="Car Wash Name"
-              variant="outlined"
-              fullWidth
-              value={newWash.name}
-              onChange={(e) => setNewWash({ ...newWash, name: e.target.value })}
-            />
-            <TextField
-              label="Street Address"
-              variant="outlined"
-              fullWidth
-              value={newWash.address}
-              onChange={(e) => setNewWash({ ...newWash, address: e.target.value })}
-            />
-            <TextField
-              label="Zip Code"
-              variant="outlined"
-              fullWidth
-              value={newWash.zipCode}
-              onChange={(e) => setNewWash({ ...newWash, zipCode: e.target.value })}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button onClick={() => setOpen(false)} color="inherit">Cancel</Button>
-          <Button 
-            variant="contained" 
-            onClick={handleSaveWash}
-            disabled={!newWash.name || !newWash.address}
-          >
-            Save Location
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+    </Box>
   );
 }
 

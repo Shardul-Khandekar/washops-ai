@@ -15,7 +15,7 @@ function Login({ open, onClose, onSwitchToSignUp }) {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5001/api/login', { email, password });
+            const response = await axios.post('http://localhost:5001/api/auth/login', { email, password });
             if (response.status === 200) {
                 localStorage.setItem('user', JSON.stringify(response.data.user));
                 onClose();

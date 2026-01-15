@@ -16,7 +16,7 @@ function SignUp({ open, onClose, onSwitchToLogin }) {
     const handleSignUp = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5001/api/signup', { email, password });
+            const response = await axios.post('http://localhost:5001/api/auth/signup', { email, password });
             if (response.status === 201) {
                 setShowToast(true);
 
