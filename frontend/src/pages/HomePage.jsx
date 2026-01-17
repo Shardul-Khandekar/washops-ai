@@ -5,11 +5,13 @@ import AddIcon from '@mui/icons-material/Add';
 import SettingsIcon from '@mui/icons-material/Settings';
 import * as S from '../styles/Dashboard.styles';
 import axios from 'axios';
+import LocationDetail from '../components/LocationDetail';
 
 
 function HomePage() {
 
   const [washes, setWashes] = useState([]);
+  const [selectedWash, setSelectedWash] = useState(null); // For Location Detail View
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
@@ -92,11 +94,15 @@ function HomePage() {
           backgroundColor: '#ffffff'
         }}
       >
-        <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, color: '#37352f' }}>
-          Workspace
-        </Typography>
-
-        {/* 3. 4-QUADRANT GRID */}
+        {selectedWash ? (
+          /* SHOW DETAIL VIEW */
+          <LocationDetail 
+            wash={selectedWash} 
+            onBack={() => setSelectedWash(null)} 
+          />
+        ) : (
+          <>
+        {/* 4-QUADRANT GRID */}
         <S.DashboardGrid>
           {/* TOP LEFT: LOCATIONS */}
           <S.QuadrantBox>
@@ -115,8 +121,12 @@ function HomePage() {
                   <CircularProgress size={24} sx={{ color: '#ededed' }} />
                 </Box>
               ) : washes.length > 0 ? (
-                washes.map((wash) => (
-                  <S.LocationRow key={wash.id}>
+                washes.map((wash) => (                  
+                  <S.LocationRow 
+                    key={wash.id}
+                    onClick={() => setSelectedWash(wash)}
+                    sx={{ cursor: 'pointer' }}
+                  >
                     {/* If a twilioNumber exists, we show it as Active (Green) */}
                     <S.StatusDot $active={!!wash.twilioNumber} />
                     <Box sx={{ flexGrow: 1 }}>
@@ -152,6 +162,8 @@ function HomePage() {
              <Typography sx={{ color: '#acaba9' }}>Lead & Booking Pipeline</Typography>
           </S.QuadrantBox>
         </S.DashboardGrid>
+        </>
+        )}
       </Box>
 
       {/* ADD LOCATION DRAWER */}
