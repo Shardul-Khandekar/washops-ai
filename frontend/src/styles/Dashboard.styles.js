@@ -1,5 +1,6 @@
 import { styled } from '@mui/material/styles';
 import { Box, Button, ListItemButton, Paper } from '@mui/material';
+import { TextField } from '@mui/material';
 
 export const SidebarContainer = styled(Box)(({ theme }) => ({
   width: '240px',
@@ -102,4 +103,37 @@ export const StatusDot = styled('div', {
   borderRadius: '50%',
   backgroundColor: $active ? '#0fba5f' : '#f5d663',
   marginRight: '12px',
+}));
+
+export const DrawerContent = styled(Box)({
+  width: '400px',
+  padding: '32px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '24px',
+});
+
+export const StyledTextField = styled(TextField)({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '8px',
+    backgroundColor: '#fbfbfa',
+    '& fieldset': { border: '1px solid #ededed' },
+    '&:hover fieldset': { borderColor: '#d3d3d2' },
+    '&.Mui-focused fieldset': { border: '1px solid #2383e2' },
+  },
+  '& .MuiInputLabel-root': { color: '#73726e', fontSize: '14px' },
+});
+
+export const ActionButton = styled(Button)(({ variant }) => ({
+  textTransform: 'none',
+  borderRadius: '8px',
+  padding: '10px 20px',
+  fontWeight: 600,
+  boxShadow: 'none',
+  backgroundColor: variant === 'contained' ? '#2383e2' : 'transparent',
+  color: variant === 'contained' ? '#ffffff' : '#37352f',
+  '&:hover': {
+    backgroundColor: variant === 'contained' ? '#1a6dc3' : '#f1f1f1',
+    boxShadow: 'none',
+  },
 }));

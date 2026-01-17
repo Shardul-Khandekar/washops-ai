@@ -1,39 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { Box, List, ListItemIcon, ListItemText, Typography, Stack, CssBaseline, CircularProgress } from '@mui/material';
+import { Box, List, ListItemIcon, ListItemText, Typography, Stack, CssBaseline, CircularProgress, Drawer, Divider } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AddIcon from '@mui/icons-material/Add';
 import SettingsIcon from '@mui/icons-material/Settings';
 import * as S from '../styles/Dashboard.styles';
 import axios from 'axios';
 
-const mockLocations = [
-  { id: 1, name: "Seattle North Express", status: "Active", calls: 14 },
-  { id: 2, name: "Downtown Eco Wash", status: "Action Required", calls: 0 },
-  { id: 3, name: "Bellevue Luxury Detail", status: "Active", calls: 28 },
-];
 
 function HomePage() {
 
   const [washes, setWashes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
 
-  useEffect(() => {
-    const fetchWashes = async () => {
-      try {
-        const response = await axios.get(`http://localhost:5001/api/washes?email=${user.email}`);
-        setWashes(response.data);
-      } catch (err) {
-        console.error("Failed to fetch locations:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Form State
+  const [formData, setFormData] = useState({
+    name: '',
+    address: '',
+    zipCode: ''
+  });
 
-    if (user?.email) {
-      fetchWashes();
+  const fetchWashes = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5001/api/washes?email=${user.email}`);
+      setWashes(response.data);
+    } catch (err) { 
+      console.error(err); 
+    } finally { 
+      setLoading(false); 
     }
-  }, [user]);
+  };
+
+  useEffect(() => { if (user?.email) fetchWashes(); }, [user]);
+
+  const handleAddLocation = async () => {
+    try {
+      const payload = { ...formData, owner_email: user.email };
+      const response = await axios.post('http://localhost:5001/api/washes', payload);
+      
+      if (response.data.success) {
+        setDrawerOpen(false);
+        setFormData({ name: '', address: '', zipCode: '' });
+        fetchWashes(); // Refresh list
+      }
+    } catch (err) {
+      console.error("Error adding location:", err);
+    }
+  };
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
@@ -47,7 +61,10 @@ function HomePage() {
           </Typography>
         </S.SidebarHeader>
 
-        <S.CreateButton startIcon={<AddIcon style={{ color: '#2383e2' }} />}>
+        <S.CreateButton 
+          startIcon={<AddIcon style={{ color: '#2383e2' }} />}
+          onClick={() => setDrawerOpen(true)}
+        >
           Add Location
         </S.CreateButton>
 
@@ -139,6 +156,43 @@ function HomePage() {
           </S.QuadrantBox>
         </S.DashboardGrid>
       </Box>
+
+      {/* ADD LOCATION DRAWER */}
+      <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+        <S.DrawerContent>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: '#37352f' }}>New Location</Typography>
+          <Typography variant="body2" sx={{ color: '#73726e', mt: -2 }}>Enter the details for your new car wash site.</Typography>
+          
+          <Divider />
+
+          <Stack spacing={3} sx={{ mt: 2 }}>
+            <S.StyledTextField 
+              label="Business Name" 
+              fullWidth 
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              placeholder="e.g. Seattle North Express"
+            />
+            <S.StyledTextField 
+              label="Street Address" 
+              fullWidth 
+              value={formData.address}
+              onChange={(e) => setFormData({...formData, address: e.target.value})}
+            />
+            <S.StyledTextField 
+              label="Zip Code" 
+              fullWidth 
+              value={formData.zipCode}
+              onChange={(e) => setFormData({...formData, zipCode: e.target.value})}
+            />
+          </Stack>
+
+          <Box sx={{ mt: 'auto', display: 'flex', gap: 2 }}>
+            <S.ActionButton fullWidth onClick={() => setDrawerOpen(false)}>Cancel</S.ActionButton>
+            <S.ActionButton fullWidth variant="contained" onClick={handleAddLocation}>Create Site</S.ActionButton>
+          </Box>
+        </S.DrawerContent>
+      </Drawer>
     </Box>
   );
 }
