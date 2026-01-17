@@ -41,7 +41,7 @@ function HomePage() {
       
       if (response.data.success) {
         setDrawerOpen(false);
-        setFormData({ name: '', address: '', zipCode: '' });
+        setFormData({ name: '', address: '' });
         fetchWashes(); // Refresh list
       }
     } catch (err) {
@@ -127,9 +127,6 @@ function HomePage() {
                         {wash.twilioNumber || 'No number assigned'}
                       </Typography>
                     </Box>
-                    <Typography variant="caption" sx={{ color: '#73726e', bgcolor: '#f1f1f1', px: 1, py: 0.5, borderRadius: '4px' }}>
-                      {wash.zipCode}
-                    </Typography>
                   </S.LocationRow>
                 ))
               ) : (
