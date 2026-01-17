@@ -1,9 +1,10 @@
-import React from 'react';
-import { Box, List, ListItemIcon, ListItemText, Typography, Stack, CssBaseline } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, List, ListItemIcon, ListItemText, Typography, Stack, CssBaseline, CircularProgress } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AddIcon from '@mui/icons-material/Add';
 import SettingsIcon from '@mui/icons-material/Settings';
 import * as S from '../styles/Dashboard.styles';
+import axios from 'axios';
 
 const mockLocations = [
   { id: 1, name: "Seattle North Express", status: "Active", calls: 14 },
@@ -12,6 +13,28 @@ const mockLocations = [
 ];
 
 function HomePage() {
+
+  const [washes, setWashes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
+
+  useEffect(() => {
+    const fetchWashes = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5001/api/washes?email=${user.email}`);
+        setWashes(response.data);
+      } catch (err) {
+        console.error("Failed to fetch locations:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user?.email) {
+      fetchWashes();
+    }
+  }, [user]);
+
   return (
     <Box sx={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
       <CssBaseline />
@@ -70,19 +93,33 @@ function HomePage() {
             </Box>
 
             <Stack spacing={0.5} sx={{ overflowY: 'auto' }}>
-              {mockLocations.map((loc) => (
-                <S.LocationRow key={loc.id}>
-                  <S.StatusDot $active={loc.status === "Active"} />
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#37352f' }}>
-                      {loc.name}
+              {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                  <CircularProgress size={24} sx={{ color: '#ededed' }} />
+                </Box>
+              ) : washes.length > 0 ? (
+                washes.map((wash) => (
+                  <S.LocationRow key={wash.id}>
+                    {/* If a twilioNumber exists, we show it as Active (Green) */}
+                    <S.StatusDot $active={!!wash.twilioNumber} />
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#37352f' }}>
+                        {wash.name}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#acaba9' }}>
+                        {wash.twilioNumber || 'No number assigned'}
+                      </Typography>
+                    </Box>
+                    <Typography variant="caption" sx={{ color: '#73726e', bgcolor: '#f1f1f1', px: 1, py: 0.5, borderRadius: '4px' }}>
+                      {wash.zipCode}
                     </Typography>
-                  </Box>
-                  <Typography variant="caption" sx={{ color: '#73726e', bgcolor: '#f1f1f1', px: 1, py: 0.5, borderRadius: '4px' }}>
-                    {loc.calls} calls
-                  </Typography>
-                </S.LocationRow>
-              ))}
+                  </S.LocationRow>
+                ))
+              ) : (
+                <Typography variant="body2" sx={{ color: '#acaba9', fontStyle: 'italic', p: 2 }}>
+                  No locations found.
+                </Typography>
+              )}
             </Stack>
           </S.QuadrantBox>
 
