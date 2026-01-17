@@ -1,10 +1,10 @@
 import { styled } from '@mui/material/styles';
-import { Box, Button, List, ListItemButton } from '@mui/material';
+import { Box, Button, ListItemButton, Paper } from '@mui/material';
 
 export const SidebarContainer = styled(Box)(({ theme }) => ({
   width: '240px',
   height: '100vh',
-  backgroundColor: '#fbfbfa', // Notion's sidebar background
+  backgroundColor: '#fbfbfa',
   borderRight: '1px solid #ededed',
   display: 'flex',
   flexDirection: 'column',
@@ -22,7 +22,6 @@ export const SidebarHeader = styled(Box)({
   color: '#37352f',
 });
 
-// Google-style Floating Action Button for key dashboard actions
 export const CreateButton = styled(Button)({
   margin: '12px 16px',
   textTransform: 'none',
@@ -39,21 +38,68 @@ export const CreateButton = styled(Button)({
   },
 });
 
-export const NavItem = styled(ListItemButton)(({ active }) => ({
+export const NavItem = styled(ListItemButton, {
+  shouldForwardProp: (prop) => prop !== '$active',
+})(({ $active }) => ({
   borderRadius: '6px',
   margin: '2px 8px',
   padding: '6px 12px',
-  color: active ? '#37352f' : '#73726e',
-  backgroundColor: active ? '#efefef' : 'transparent',
+  color: $active ? '#37352f' : '#73726e',
+  backgroundColor: $active ? '#efefef' : 'transparent',
   '&:hover': {
     backgroundColor: '#efefef',
   },
   '& .MuiTypography-root': {
     fontSize: '14px',
-    fontWeight: active ? 600 : 500,
+    fontWeight: $active ? 600 : 500,
   },
   '& .MuiListItemIcon-root': {
     minWidth: '32px',
-    color: active ? '#37352f' : '#73726e',
+    color: $active ? '#37352f' : '#73726e',
   },
+}));
+
+export const DashboardGrid = styled(Box)({
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr',
+  gridTemplateRows: '1fr 1fr',
+  gap: '24px',
+  flexGrow: 1, // Allow the grid to take up the rest of the flex container
+  width: '100%',
+  minHeight: 0, // Critical for grid items to shrink/grow correctly in flex
+});
+
+export const QuadrantBox = styled(Paper)({
+  backgroundColor: '#ffffff',
+  borderRadius: '12px',
+  border: '1px solid #ededed',
+  padding: '24px',
+  display: 'flex',
+  flexDirection: 'column',
+  boxShadow: 'none',
+  overflow: 'hidden',
+  height: '100%',
+});
+
+export const LocationRow = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  padding: '12px',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  transition: 'background-color 0.2s ease',
+  '&:hover': {
+    backgroundColor: '#f7f7f5',
+  },
+  borderBottom: '1px solid #f1f1f1',
+});
+
+export const StatusDot = styled('div', {
+  shouldForwardProp: (prop) => prop !== '$active',
+})(({ $active }) => ({
+  width: '8px',
+  height: '8px',
+  borderRadius: '50%',
+  backgroundColor: $active ? '#0fba5f' : '#f5d663',
+  marginRight: '12px',
 }));
