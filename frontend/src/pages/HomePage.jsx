@@ -170,11 +170,43 @@ function HomePage() {
             </S.DashboardGrid>
           </>
         )}
-      </Box>
+        </Box>
 
-      {/* DRAWER REMAINS THE SAME */}
+      {/* ADD LOCATION DRAWER */}
       <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-        {/* ... (Drawer Content) ... */}
+        <S.DrawerContent>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: '#37352f' }}>New Location</Typography>
+          <Typography variant="body2" sx={{ color: '#73726e', mt: -2 }}>Enter the details for your new car wash site.</Typography>
+          
+          <Divider />
+
+          <Stack spacing={3} sx={{ mt: 2 }}>
+            <S.StyledTextField 
+              label="Business Name" 
+              fullWidth 
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              placeholder="e.g. Seattle North Express"
+            />
+            <S.StyledTextField 
+              label="Street Address" 
+              fullWidth 
+              value={formData.address}
+              onChange={(e) => setFormData({...formData, address: e.target.value})}
+            />
+            <S.StyledTextField 
+              label="Zip Code" 
+              fullWidth 
+              value={formData.zipCode}
+              onChange={(e) => setFormData({...formData, zipCode: e.target.value})}
+            />
+          </Stack>
+
+          <Box sx={{ mt: 'auto', display: 'flex', gap: 2 }}>
+            <S.ActionButton fullWidth onClick={() => setDrawerOpen(false)}>Cancel</S.ActionButton>
+            <S.ActionButton fullWidth variant="contained" onClick={handleAddLocation}>Create Site</S.ActionButton>
+          </Box>
+        </S.DrawerContent>
       </Drawer>
     </Box>
   );
