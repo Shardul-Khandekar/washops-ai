@@ -1,44 +1,32 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Box, CssBaseline } from '@mui/material';
+import { CssBaseline } from '@mui/material';
 import SignUp from './pages/SignUp';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import HomePage from './pages/HomePage';
-import WashDetails from './pages/WashDetails';
 
 function App() {
   return (
     <Router>
-      {/* This Box creates the full-screen light grey background */}
       <CssBaseline />
-      <Box sx={{ 
-        backgroundColor: '#f0f2f3', // Google's subtle grey
-        minHeight: '100vh',
-        width: '100vw',
-        display: 'flex',
-        flexDirection: 'column', // Stack vertically to prevent horizontal stretching
-        alignItems: 'center', 
-        justifyContent: 'center' 
-      }}>
       <Routes>
-        {/* Base path / shows the Home/Landing page */}
+        {/* Landing Page */}
         <Route path="/" element={<Home />} />
 
-        {/* Auth routes */}
+        {/* Auth routes - These should handle their own centering/backgrounds internally */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
 
-        {/* The Portal Dashboard */}
+        {/* The Workspace Portal 
+            We use the same HomePage component for both routes.
+            The presence of 'washId' in the URL tells the component which view to show.
+        */}
         <Route path="/homepage" element={<HomePage />} />
+        <Route path="/homepage/wash/:washId" element={<HomePage />} />
 
-        {/* Car wash details */}
-        <Route path="/wash/:id" element={<WashDetails />} />
-
-        {/* Catch-all: Redirect unknown paths back to landing page */}
+        {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" />} />
-        
       </Routes>
-      </Box>
     </Router>
   );
 }
