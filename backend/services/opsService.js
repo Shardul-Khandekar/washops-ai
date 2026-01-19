@@ -3,6 +3,17 @@ const { createResponse } = require('../utils/response');
 
 const opsService = {
 
+    // Get Business Hours
+    getHoursByWashId: (wash_id) => {
+        return new Promise((resolve) => {
+            const query = `SELECT * FROM business_hours WHERE wash_id = ? ORDER BY id ASC`;
+            db.all(query, [wash_id], (err, rows) => {
+                if (err) resolve(createResponse(false, null, err));
+                else resolve(createResponse(true, rows));
+            });
+        });
+    },
+
     // Manage Business Hours
     updateBusinessHours: (washId, hoursArray) => {
         return new Promise((resolve) => {
