@@ -1,6 +1,5 @@
 import { styled } from '@mui/material/styles';
-import { Box, Button, ListItemButton, Paper } from '@mui/material';
-import { TextField } from '@mui/material';
+import { Box, Button, ListItemButton, Paper, Typography, TextField } from '@mui/material';
 
 export const SidebarContainer = styled(Box)(({ theme }) => ({
   width: '240px',
@@ -47,9 +46,7 @@ export const NavItem = styled(ListItemButton, {
   padding: '6px 12px',
   color: $active ? '#37352f' : '#73726e',
   backgroundColor: $active ? '#efefef' : 'transparent',
-  '&:hover': {
-    backgroundColor: '#efefef',
-  },
+  '&:hover': { backgroundColor: '#efefef' },
   '& .MuiTypography-root': {
     fontSize: '14px',
     fontWeight: $active ? 600 : 500,
@@ -65,9 +62,8 @@ export const DashboardGrid = styled(Box)({
   gridTemplateColumns: '1fr 1fr',
   gridTemplateRows: '1fr 1fr',
   gap: '24px',
-  flexGrow: 1, // Allow the grid to take up the rest of the flex container
+  flexGrow: 1,
   width: '100%',
-  minHeight: 0, // Critical for grid items to shrink/grow correctly in flex
 });
 
 export const QuadrantBox = styled(Paper)({
@@ -89,9 +85,7 @@ export const LocationRow = styled(Box)({
   borderRadius: '8px',
   cursor: 'pointer',
   transition: 'background-color 0.2s ease',
-  '&:hover': {
-    backgroundColor: '#f7f7f5',
-  },
+  '&:hover': { backgroundColor: '#f7f7f5' },
   borderBottom: '1px solid #f1f1f1',
 });
 
@@ -105,12 +99,52 @@ export const StatusDot = styled('div', {
   marginRight: '12px',
 }));
 
+export const TimeInputWrapper = styled(Box)({
+  display: 'inline-flex', // Tight border around the time
+  alignItems: 'center',
+  backgroundColor: '#fbfbfa',
+  border: '1px solid #ededed',
+  borderRadius: '6px',
+  padding: '4px 8px',
+  transition: 'all 0.2s ease',
+  '&:focus-within': {
+    borderColor: '#2383e2',
+    boxShadow: '0 0 0 2px rgba(35, 131, 226, 0.1)',
+  },
+});
+
+export const ToggleButton = styled(Box, {
+  shouldForwardProp: (prop) => prop !== '$active',
+})(({ $active }) => ({
+  fontSize: '11px',
+  fontWeight: 700,
+  padding: '4px 6px',
+  borderRadius: '4px',
+  cursor: 'pointer',
+  userSelect: 'none',
+  backgroundColor: $active ? '#2383e2' : 'transparent',
+  color: $active ? '#ffffff' : '#acaba9',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    backgroundColor: $active ? '#2383e2' : '#f1f1f1',
+  },
+}));
+
+export const ScheduleHeaderRow = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  padding: '0 12px 12px 12px',
+  borderBottom: '2px solid #f1f1f1',
+  marginBottom: '8px',
+});
+
 export const DrawerContent = styled(Box)({
   width: '400px',
   padding: '32px',
   display: 'flex',
   flexDirection: 'column',
   gap: '24px',
+  height: '100%',
 });
 
 export const StyledTextField = styled(TextField)({
@@ -118,10 +152,7 @@ export const StyledTextField = styled(TextField)({
     borderRadius: '8px',
     backgroundColor: '#fbfbfa',
     '& fieldset': { border: '1px solid #ededed' },
-    '&:hover fieldset': { borderColor: '#d3d3d2' },
-    '&.Mui-focused fieldset': { border: '1px solid #2383e2' },
   },
-  '& .MuiInputLabel-root': { color: '#73726e', fontSize: '14px' },
 });
 
 export const ActionButton = styled(Button)(({ variant }) => ({
@@ -132,8 +163,8 @@ export const ActionButton = styled(Button)(({ variant }) => ({
   boxShadow: 'none',
   backgroundColor: variant === 'contained' ? '#2383e2' : 'transparent',
   color: variant === 'contained' ? '#ffffff' : '#37352f',
+  border: variant === 'outlined' ? '1px solid #ededed' : 'none',
   '&:hover': {
     backgroundColor: variant === 'contained' ? '#1a6dc3' : '#f1f1f1',
-    boxShadow: 'none',
   },
 }));
