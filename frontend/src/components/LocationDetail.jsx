@@ -1,45 +1,129 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { 
   Box, Typography, IconButton, Stack, Switch, 
-  Select, MenuItem, Divider 
+  Divider, CircularProgress, InputBase 
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import axios from 'axios';
 import * as S from '../styles/Dashboard.styles';
 
-const DAYS_OF_WEEK = [
-  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
-];
+// --- TIME CONVERSION HELPERS ---
+const to12h = (time24) => {
+  if (!time24) return { h: '09', m: '00', period: 'AM' };
+  let [h, m] = time24.split(':');
+  const period = parseInt(h) >= 12 ? 'PM' : 'AM';
+  h = (parseInt(h) % 12) || 12;
+  return { h: h.toString().padStart(2, '0'), m, period };
+};
 
-const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
-  const hour = Math.floor(i / 2).toString().padStart(2, '0');
-  const min = i % 2 === 0 ? '00' : '30';
-  return `${hour}:${min}`;
-});
+const to24h = (h, m, period) => {
+  let hour = parseInt(h || '0');
+  if (period === 'PM' && hour < 12) hour += 12;
+  if (period === 'AM' && hour === 12) hour = 0;
+  return `${hour.toString().padStart(2, '0')}:${m || '00'}`;
+};
 
-function LocationDetail({ wash, onBack }) {
-  const [hours, setHours] = useState(
-    DAYS_OF_WEEK.map(day => ({ 
-      day_of_week: day, open_time: '09:00', close_time: '17:00', is_closed: false 
-    }))
-  );
+const TimeField = ({ value, onChange }) => {
+  const { h, m, period } = to12h(value);
+  
+  // Local state to allow empty strings while typing
+  const [localH, setLocalH] = useState(h);
+  const [localM, setLocalM] = useState(m);
 
-  const handleHourChange = (index, field, value) => {
-    const newHours = [...hours];
-    newHours[index][field] = value;
-    setHours(newHours);
-  };
+  // Keep local state in sync with external value
+  useEffect(() => {
+    setLocalH(h);
+    setLocalM(m);
+  }, [h, m]);
 
-  const saveHours = async () => {
-    try {
-      // POSTING TO: /api/washes/:id/hours
-      await axios.post(`http://localhost:5001/api/ops/${wash.id}/hours`, { hours });
-      alert("Hours synced with AI agent.");
-    } catch (err) {
-      console.error("Failed to save hours", err);
+  const handleInputChange = (type, val) => {
+    const cleanVal = val.replace(/\D/g, '').slice(0, 2);
+    
+    if (type === 'h') {
+      setLocalH(cleanVal);
+      if (cleanVal !== '' && parseInt(cleanVal) <= 12) {
+        onChange(to24h(cleanVal, localM, period));
+      }
+    } else {
+      setLocalM(cleanVal);
+      if (cleanVal !== '' && parseInt(cleanVal) <= 59) {
+        onChange(to24h(localH, cleanVal, period));
+      }
     }
   };
+
+  const togglePeriod = () => {
+    const newPeriod = period === 'AM' ? 'PM' : 'AM';
+    onChange(to24h(localH, localM, newPeriod));
+  };
+
+  return (
+    <S.TimeInputWrapper>
+      <InputBase 
+        value={localH} 
+        onChange={(e) => handleInputChange('h', e.target.value)}
+        onBlur={() => !localH && setLocalH('12')} // Fallback only on blur
+        inputProps={{ 
+          style: { padding: 0, textAlign: 'center', width: '22px' },
+          maxLength: 2 
+        }}
+        sx={{ fontSize: '14px', fontWeight: 600 }} 
+      />
+      <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#acaba9', mx: 0.1 }}>:</Typography>
+      <InputBase 
+        value={localM} 
+        onChange={(e) => handleInputChange('m', e.target.value)}
+        onBlur={() => !localM && setLocalM('00')} // Fallback only on blur
+        inputProps={{ 
+          style: { padding: 0, textAlign: 'center', width: '22px' },
+          maxLength: 2 
+        }}
+        sx={{ fontSize: '14px', fontWeight: 600 }} 
+      />
+      <Stack direction="row" spacing={0.2} sx={{ ml: 1, borderLeft: '1px solid #ededed', pl: 1 }}>
+        <S.ToggleButton $active={period === 'AM'} onClick={togglePeriod}>AM</S.ToggleButton>
+        <S.ToggleButton $active={period === 'PM'} onClick={togglePeriod}>PM</S.ToggleButton>
+      </Stack>
+    </S.TimeInputWrapper>
+  );
+};
+
+function LocationDetail({ wash, onBack }) {
+  const { washId } = useParams();
+  const [hours, setHours] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5001/api/ops/${washId}/hours`);
+        if (res.data) setHours(res.data);
+      } catch (err) { console.error("Fetch Error:", err); }
+      finally { setLoading(false); }
+    };
+    loadData();
+  }, [washId]);
+
+  const handleHourChange = (index, field, value) => {
+    const updated = [...hours];
+    updated[index][field] = value;
+    setHours(updated);
+  };
+
+  const saveToDb = async () => {
+    try {
+      await axios.post(`http://localhost:5001/api/ops/${washId}/hours`, { hours });
+      alert("Changes Saved Successfully!");
+    } catch (err) { console.error("Save Error:", err); }
+  };
+
+  if (loading) return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
+      <CircularProgress size={40} sx={{ color: '#ededed' }} />
+    </Box>
+  );
 
   return (
     <Box sx={{ animation: 'fadeIn 0.3s ease-in' }}>
@@ -48,96 +132,60 @@ function LocationDetail({ wash, onBack }) {
           <ArrowBackIcon fontSize="small" />
         </IconButton>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, color: '#37352f' }}>
-            {wash.name}
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#73726e' }}>
-            {wash.address}, {wash.zipCode}
-          </Typography>
+          <Typography variant="h4" sx={{ fontWeight: 700, color: '#37352f' }}>{wash?.name}</Typography>
+          <Typography variant="body2" sx={{ color: '#73726e' }}>Operations & Schedule Management</Typography>
         </Box>
-
         <Box sx={{ ml: 'auto', display: 'flex', gap: 2 }}>
-           <S.ActionButton variant="outlined" onClick={saveHours} startIcon={<SaveIcon />}>
-             Sync AI Knowledge
-           </S.ActionButton>
+           <S.ActionButton variant="outlined" startIcon={<SaveIcon />} onClick={saveToDb}>Save Changes</S.ActionButton>
            <S.ActionButton variant="contained">Manage Twilio</S.ActionButton>
         </Box>
       </Box>
 
       <Divider sx={{ mb: 4 }} />
 
-      {/* 2. OPERATIONS CONTENT */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 4 }}>
-        {/* BUSINESS HOURS */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 4 }}>
         <S.QuadrantBox>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '16px' }}>
-              Business Hours
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#acaba9', fontStyle: 'italic' }}>
-              Define when the AI agent handles bookings.
-            </Typography>
-          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, fontSize: '16px' }}>Business Hours</Typography>
+          
+          <S.ScheduleHeaderRow>
+            <Typography sx={{ width: '100px', fontSize: '11px', fontWeight: 800, color: '#acaba9' }}>DAY</Typography>
+            <Typography sx={{ width: '60px', fontSize: '11px', fontWeight: 800, color: '#acaba9' }}>STATUS</Typography>
+            <Typography sx={{ ml: 4, fontSize: '11px', fontWeight: 800, color: '#acaba9' }}>OPERATING HOURS</Typography>
+          </S.ScheduleHeaderRow>
 
-          <Stack spacing={1}>
+          <Stack spacing={0}>
             {hours.map((item, index) => (
-              <Box 
-                key={item.day_of_week} 
-                sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  p: 1.5, 
-                  borderRadius: '8px',
-                  borderBottom: '1px solid #f1f1f1',
-                  opacity: item.is_closed ? 0.5 : 1
-                }}
-              >
-                <Typography sx={{ width: '100px', fontWeight: 600, fontSize: '14px' }}>
-                  {item.day_of_week}
-                </Typography>
-
-                <Switch 
-                  size="small"
-                  checked={!item.is_closed}
-                  onChange={(e) => handleHourChange(index, 'is_closed', !e.target.checked)}
-                />
-
-                {!item.is_closed ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
-                    <Select
-                      size="small"
-                      value={item.open_time}
-                      onChange={(e) => handleHourChange(index, 'open_time', e.target.value)}
-                      sx={{ fontSize: '13px', minWidth: '90px' }}
-                    >
-                      {TIME_SLOTS.map(t => <MenuItem key={t} value={t}>{t}</MenuItem>)}
-                    </Select>
-                    <Typography sx={{ color: '#acaba9' }}>—</Typography>
-                    <Select
-                      size="small"
-                      value={item.close_time}
-                      onChange={(e) => handleHourChange(index, 'close_time', e.target.value)}
-                      sx={{ fontSize: '13px', minWidth: '90px' }}
-                    >
-                      {TIME_SLOTS.map(t => <MenuItem key={t} value={t}>{t}</MenuItem>)}
-                    </Select>
-                  </Box>
-                ) : (
-                  <Typography variant="caption" sx={{ ml: 2, color: '#73726e', fontWeight: 700 }}>
-                    CLOSED
-                  </Typography>
-                )}
+              <Box key={item.day_of_week} sx={{ 
+                display: 'flex', alignItems: 'center', py: 1.5, borderBottom: '1px solid #f1f1f1',
+                opacity: item.is_closed ? 0.4 : 1 
+              }}>
+                <Typography sx={{ width: '100px', fontWeight: 600, fontSize: '14px' }}>{item.day_of_week}</Typography>
+                <Box sx={{ width: '60px' }}>
+                  <Switch 
+                    size="small" 
+                    checked={!item.is_closed} 
+                    onChange={(e) => handleHourChange(index, 'is_closed', !e.target.checked)} 
+                  />
+                </Box>
+                <Box sx={{ ml: 4, display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+                  {!item.is_closed ? (
+                    <Stack direction="row" alignItems="center" spacing={1.5}>
+                      <TimeField value={item.open_time} onChange={(val) => handleHourChange(index, 'open_time', val)} />
+                      <Typography sx={{ color: '#acaba9', fontWeight: 700, fontSize: '11px' }}>TO</Typography>
+                      <TimeField value={item.close_time} onChange={(val) => handleHourChange(index, 'close_time', val)} />
+                    </Stack>
+                  ) : (
+                    <Typography variant="caption" sx={{ fontWeight: 700, color: '#73726e' }}>CLOSED</Typography>
+                  )}
+                </Box>
               </Box>
             ))}
           </Stack>
         </S.QuadrantBox>
 
-        {/* SERVICE CATALOG */}
         <S.QuadrantBox sx={{ bgcolor: '#fbfbfa', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, fontSize: '16px' }}>Service Catalog</Typography>
-          <Typography sx={{ color: '#acaba9' }}>Configure pricing and wash types here.</Typography>
+          <Typography sx={{ color: '#acaba9' }}>Service Catalog Configuration</Typography>
         </S.QuadrantBox>
-
       </Box>
     </Box>
   );
