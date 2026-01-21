@@ -70,7 +70,7 @@ export const QuadrantBox = styled(Paper)({
   backgroundColor: '#ffffff',
   borderRadius: '12px',
   border: '1px solid #ededed',
-  padding: '24px',
+  padding: '16px',
   display: 'flex',
   flexDirection: 'column',
   boxShadow: 'none',
@@ -105,7 +105,7 @@ export const TimeInputWrapper = styled(Box)({
   backgroundColor: '#fbfbfa',
   border: '1px solid #ededed',
   borderRadius: '6px',
-  padding: '4px 8px',
+  padding: '2px 6px',
   transition: 'all 0.2s ease',
   '&:focus-within': {
     borderColor: '#2383e2',
@@ -133,7 +133,7 @@ export const ToggleButton = styled(Box, {
 export const ScheduleHeaderRow = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  padding: '0 12px 12px 12px',
+  padding: '0 8px 12px 8px',
   borderBottom: '2px solid #f1f1f1',
   marginBottom: '8px',
 });
