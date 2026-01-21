@@ -12,6 +12,6 @@ router.post('/:id/hours', opsController.updateHours);
 
 // Services Catalog endpoints
 router.get('/:id/services', opsController.getServices);
-router.post('/:id/services', opsController.addService);
+router.post('/:id/services', opsController.syncServices);
 
 module.exports = router;
