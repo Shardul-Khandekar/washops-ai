@@ -50,13 +50,27 @@ const opsService = {
         });
     },
 
-    addService: (washId, name, price, description, duration) => {
+    syncServices: (washId, servicesArray) => {
         return new Promise((resolve) => {
-        const query = `INSERT INTO services (wash_id, name, price, description, duration_minutes) VALUES (?, ?, ?, ?, ?)`;
-        db.run(query, [washId, name, price, description, duration], function(err) {
-            if (err) resolve(createResponse(false, null, err));
-            else resolve(createResponse(true, { id: this.lastID }));
-        });
+            db.serialize(() => {
+                // Remove old services to match frontend state
+                db.run(`DELETE FROM services WHERE wash_id = ?`, [washId]);
+
+                const stmt = db.prepare(`
+                    INSERT INTO services (wash_id, name, price, description, duration_minutes)
+                    VALUES (?, ?, ?, ?, ?)
+                `);
+
+                servicesArray.forEach((s) => {
+                    // Include description so the AI has context
+                    stmt.run([washId, s.name, s.price, s.description || '', s.duration_minutes || 30]);
+                });
+
+                stmt.finalize((err) => {
+                    if (err) resolve(createResponse(false, null, err));
+                    else resolve(createResponse(true, { message: "Service catalog synced" }));
+                });
+            });
         });
     }
 };
