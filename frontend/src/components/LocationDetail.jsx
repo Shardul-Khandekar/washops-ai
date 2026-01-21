@@ -27,12 +27,9 @@ const to24h = (h, m, period) => {
 
 const TimeField = ({ value, onChange }) => {
   const { h, m, period } = to12h(value);
-  
-  // Local state to allow empty strings while typing
   const [localH, setLocalH] = useState(h);
   const [localM, setLocalM] = useState(m);
 
-  // Keep local state in sync with external value
   useEffect(() => {
     setLocalH(h);
     setLocalM(m);
@@ -40,7 +37,6 @@ const TimeField = ({ value, onChange }) => {
 
   const handleInputChange = (type, val) => {
     const cleanVal = val.replace(/\D/g, '').slice(0, 2);
-    
     if (type === 'h') {
       setLocalH(cleanVal);
       if (cleanVal !== '' && parseInt(cleanVal) <= 12) {
@@ -64,25 +60,19 @@ const TimeField = ({ value, onChange }) => {
       <InputBase 
         value={localH} 
         onChange={(e) => handleInputChange('h', e.target.value)}
-        onBlur={() => !localH && setLocalH('12')} // Fallback only on blur
-        inputProps={{ 
-          style: { padding: 0, textAlign: 'center', width: '22px' },
-          maxLength: 2 
-        }}
-        sx={{ fontSize: '14px', fontWeight: 600 }} 
+        onBlur={() => !localH && setLocalH('12')}
+        inputProps={{ style: { padding: 0, textAlign: 'center', width: '20px' }, maxLength: 2 }}
+        sx={{ fontSize: '13px', fontWeight: 600 }} 
       />
-      <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#acaba9', mx: 0.1 }}>:</Typography>
+      <Typography sx={{ fontSize: '13px', fontWeight: 600, color: '#acaba9', mx: 0.1 }}>:</Typography>
       <InputBase 
         value={localM} 
         onChange={(e) => handleInputChange('m', e.target.value)}
-        onBlur={() => !localM && setLocalM('00')} // Fallback only on blur
-        inputProps={{ 
-          style: { padding: 0, textAlign: 'center', width: '22px' },
-          maxLength: 2 
-        }}
-        sx={{ fontSize: '14px', fontWeight: 600 }} 
+        onBlur={() => !localM && setLocalM('00')}
+        inputProps={{ style: { padding: 0, textAlign: 'center', width: '20px' }, maxLength: 2 }}
+        sx={{ fontSize: '13px', fontWeight: 600 }} 
       />
-      <Stack direction="row" spacing={0.2} sx={{ ml: 1, borderLeft: '1px solid #ededed', pl: 1 }}>
+      <Stack direction="row" spacing={0.1} sx={{ ml: 0.5, borderLeft: '1px solid #ededed', pl: 0.5 }}>
         <S.ToggleButton $active={period === 'AM'} onClick={togglePeriod}>AM</S.ToggleButton>
         <S.ToggleButton $active={period === 'PM'} onClick={togglePeriod}>PM</S.ToggleButton>
       </Stack>
@@ -119,18 +109,12 @@ function LocationDetail({ wash, onBack }) {
     } catch (err) { console.error("Save Error:", err); }
   };
 
-  if (loading) return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
-      <CircularProgress size={40} sx={{ color: '#ededed' }} />
-    </Box>
-  );
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
 
   return (
     <Box sx={{ animation: 'fadeIn 0.3s ease-in' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, gap: 2 }}>
-        <IconButton onClick={onBack} sx={{ border: '1px solid #ededed' }}>
-          <ArrowBackIcon fontSize="small" />
-        </IconButton>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 2 }}>
+        <IconButton onClick={onBack} sx={{ border: '1px solid #ededed' }}><ArrowBackIcon fontSize="small" /></IconButton>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 700, color: '#37352f' }}>{wash?.name}</Typography>
           <Typography variant="body2" sx={{ color: '#73726e' }}>Operations & Schedule Management</Typography>
@@ -141,37 +125,32 @@ function LocationDetail({ wash, onBack }) {
         </Box>
       </Box>
 
-      <Divider sx={{ mb: 4 }} />
+      <Divider sx={{ mb: 3 }} />
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 4 }}>
+      {/* MODIFIED GRID: 1fr 1fr gives equal space to both columns */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
         <S.QuadrantBox>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, fontSize: '16px' }}>Business Hours</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontSize: '15px' }}>Business Hours</Typography>
           
           <S.ScheduleHeaderRow>
-            <Typography sx={{ width: '100px', fontSize: '11px', fontWeight: 800, color: '#acaba9' }}>DAY</Typography>
-            <Typography sx={{ width: '60px', fontSize: '11px', fontWeight: 800, color: '#acaba9' }}>STATUS</Typography>
-            <Typography sx={{ ml: 4, fontSize: '11px', fontWeight: 800, color: '#acaba9' }}>OPERATING HOURS</Typography>
+            <Typography sx={{ width: '80px', fontSize: '10px', fontWeight: 800, color: '#acaba9' }}>DAY</Typography>
+            <Typography sx={{ width: '50px', fontSize: '10px', fontWeight: 800, color: '#acaba9' }}>STATUS</Typography>
+            <Typography sx={{ ml: 2, fontSize: '10px', fontWeight: 800, color: '#acaba9' }}>OPERATING HOURS</Typography>
           </S.ScheduleHeaderRow>
 
           <Stack spacing={0}>
             {hours.map((item, index) => (
               <Box key={item.day_of_week} sx={{ 
-                display: 'flex', alignItems: 'center', py: 1.5, borderBottom: '1px solid #f1f1f1',
+                display: 'flex', alignItems: 'center', py: 1, borderBottom: '1px solid #f1f1f1',
                 opacity: item.is_closed ? 0.4 : 1 
               }}>
-                <Typography sx={{ width: '100px', fontWeight: 600, fontSize: '14px' }}>{item.day_of_week}</Typography>
-                <Box sx={{ width: '60px' }}>
-                  <Switch 
-                    size="small" 
-                    checked={!item.is_closed} 
-                    onChange={(e) => handleHourChange(index, 'is_closed', !e.target.checked)} 
-                  />
-                </Box>
-                <Box sx={{ ml: 4, display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+                <Typography sx={{ width: '80px', fontWeight: 600, fontSize: '13px' }}>{item.day_of_week}</Typography>
+                <Box sx={{ width: '50px' }}><Switch size="small" checked={!item.is_closed} onChange={(e) => handleHourChange(index, 'is_closed', !e.target.checked)} /></Box>
+                <Box sx={{ ml: 2, display: 'flex', alignItems: 'center', flexGrow: 1 }}>
                   {!item.is_closed ? (
-                    <Stack direction="row" alignItems="center" spacing={1.5}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
                       <TimeField value={item.open_time} onChange={(val) => handleHourChange(index, 'open_time', val)} />
-                      <Typography sx={{ color: '#acaba9', fontWeight: 700, fontSize: '11px' }}>TO</Typography>
+                      <Typography sx={{ color: '#acaba9', fontWeight: 700, fontSize: '10px' }}>TO</Typography>
                       <TimeField value={item.close_time} onChange={(val) => handleHourChange(index, 'close_time', val)} />
                     </Stack>
                   ) : (
