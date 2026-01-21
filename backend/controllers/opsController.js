@@ -34,17 +34,20 @@ const getServices = async (req, res) => {
   res.status(500).json(result);
 };
 
-const addService = async (req, res) => {
+const syncServices = async (req, res) => {
   const { id } = req.params;
-  const { name, price, description, duration_minutes } = req.body;
+  const { services } = req.body;
 
-  const result = await opsService.addService(id, name, price, description, duration_minutes);
-  
+  if (!Array.isArray(services)) {
+    return res.status(400).json({ success: false, error: "Invalid data format" });
+  }
+
+  const result = await opsService.syncServices(id, services);
   if (result.success) {
-    logger.info(`New service added to wash ${id}: ${name}`);
-    return res.status(201).json(result);
+    logger.info(`Service catalog synced for wash ${id}`);
+    return res.status(200).json(result);
   }
   res.status(500).json(result);
 };
 
-module.exports = { getHours, updateHours, getServices, addService };
+module.exports = { getHours, updateHours, getServices, syncServices };
