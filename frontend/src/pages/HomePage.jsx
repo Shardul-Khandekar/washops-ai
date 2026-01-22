@@ -3,13 +3,14 @@ import { Box, List, ListItemIcon, ListItemText, Typography, Stack, CssBaseline, 
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AddIcon from '@mui/icons-material/Add';
 import SettingsIcon from '@mui/icons-material/Settings';
+import LogoutIcon from '@mui/icons-material/Logout';
 import * as S from '../styles/Dashboard.styles';
 import axios from 'axios';
 import LocationDetail from '../components/LocationDetail';
 import { useParams, useNavigate } from 'react-router-dom';
 
 function HomePage() {
-  const { washId } = useParams(); // URL Param: /homepage/wash/:washId
+  const { washId } = useParams(); 
   const navigate = useNavigate();
 
   const [washes, setWashes] = useState([]);
@@ -17,10 +18,8 @@ function HomePage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [user] = useState(JSON.parse(localStorage.getItem('user')));
 
-  // Find the selected wash based on the URL parameter
   const selectedWash = washes.find(w => w.id.toString() === washId);
 
-  // Form State
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -55,11 +54,15 @@ function HomePage() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('user'); // Clear session
+    navigate('/'); // Redirect to landing page
+  };
+
   return (
     <Box sx={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
       <CssBaseline />
       
-      {/* 1. SIDEBAR */}
       <S.SidebarContainer>
         <S.SidebarHeader>
           <Typography variant="body1" sx={{ fontWeight: 700 }}>Workspace</Typography>
@@ -73,7 +76,6 @@ function HomePage() {
         </S.CreateButton>
 
         <List sx={{ px: 0 }}>
-          {/* Dashboard Link: Resets URL to /homepage */}
           <S.NavItem 
             $active={!washId} 
             onClick={() => navigate('/homepage')}
@@ -87,9 +89,17 @@ function HomePage() {
             <ListItemText primary="Settings" />
           </S.NavItem>
         </List>
+
+        {/* This spacer pushes the logout button to the bottom */}
+        <S.SidebarSpacer />
+
+        <S.LogoutButton onClick={handleLogout}>
+          <ListItemIcon><LogoutIcon fontSize="small" /></ListItemIcon>
+          <ListItemText primary="Sign Out" />
+        </S.LogoutButton>
+
       </S.SidebarContainer>
 
-      {/* 2. MAIN CONTENT AREA */}
       <Box 
         component="main" 
         sx={{ 
@@ -103,72 +113,67 @@ function HomePage() {
         }}
       >
         {washId && selectedWash ? (
-          /* SHOW DETAIL VIEW */
           <LocationDetail 
             wash={selectedWash} 
             onBack={() => navigate('/homepage')} 
           />
         ) : (
-          /* SHOW DASHBOARD GRID */
-          <>
-            <S.DashboardGrid>
-              <S.QuadrantBox>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '16px' }}>
-                    Locations
+          <S.DashboardGrid>
+            <S.QuadrantBox>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '16px' }}>
+                  Locations
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#2383e2', cursor: 'pointer', fontWeight: 600 }}>
+                  View All
+                </Typography>
+              </Box>
+
+              <Stack spacing={0.5}>
+                {loading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                    <CircularProgress size={24} sx={{ color: '#ededed' }} />
+                  </Box>
+                ) : washes.length > 0 ? (
+                  washes.map((wash) => (                  
+                    <S.LocationRow 
+                      key={wash.id}
+                      onClick={() => navigate(`/homepage/wash/${wash.id}`)}
+                    >
+                      <S.StatusDot $active={!!wash.twilioNumber} />
+                      <Box sx={{ flexGrow: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#37352f' }}>
+                          {wash.name}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#acaba9' }}>
+                          {wash.twilioNumber || 'No number assigned'}
+                        </Typography>
+                      </Box>
+                    </S.LocationRow>
+                  ))
+                ) : (
+                  <Typography variant="body2" sx={{ color: '#acaba9', fontStyle: 'italic', p: 2 }}>
+                    No locations found.
                   </Typography>
-                  <Typography variant="body2" sx={{ color: '#2383e2', cursor: 'pointer', fontWeight: 600 }}>
-                    View All
-                  </Typography>
-                </Box>
+                )}
+              </Stack>
+            </S.QuadrantBox>
 
-                <Stack spacing={0.5}>
-                  {loading ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                      <CircularProgress size={24} sx={{ color: '#ededed' }} />
-                    </Box>
-                  ) : washes.length > 0 ? (
-                    washes.map((wash) => (                  
-                      <S.LocationRow 
-                        key={wash.id}
-                        onClick={() => navigate(`/homepage/wash/${wash.id}`)} // Navigate to Detail URL
-                      >
-                        <S.StatusDot $active={!!wash.twilioNumber} />
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 600, color: '#37352f' }}>
-                            {wash.name}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: '#acaba9' }}>
-                            {wash.twilioNumber || 'No number assigned'}
-                          </Typography>
-                        </Box>
-                      </S.LocationRow>
-                    ))
-                  ) : (
-                    <Typography variant="body2" sx={{ color: '#acaba9', fontStyle: 'italic', p: 2 }}>
-                      No locations found.
-                    </Typography>
-                  )}
-                </Stack>
-              </S.QuadrantBox>
+            <S.QuadrantBox sx={{ bgcolor: '#fafafa', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' }}>
+               <Typography sx={{ color: '#acaba9' }}>Analytics Pipeline</Typography>
+            </S.QuadrantBox>
 
-              <S.QuadrantBox sx={{ bgcolor: '#fafafa', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' }}>
-                 <Typography sx={{ color: '#acaba9' }}>Analytics Pipeline</Typography>
-              </S.QuadrantBox>
+            <S.QuadrantBox sx={{ bgcolor: '#fafafa', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' }}>
+               <Typography sx={{ color: '#acaba9' }}>AI Activity Feed</Typography>
+            </S.QuadrantBox>
 
-              <S.QuadrantBox sx={{ bgcolor: '#fafafa', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' }}>
-                 <Typography sx={{ color: '#acaba9' }}>AI Activity Feed</Typography>
-              </S.QuadrantBox>
-
-              <S.QuadrantBox sx={{ bgcolor: '#fafafa', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' }}>
-                 <Typography sx={{ color: '#acaba9' }}>Lead & Booking Pipeline</Typography>
-              </S.QuadrantBox>
-            </S.DashboardGrid>
-          </>
+            <S.QuadrantBox sx={{ bgcolor: '#fafafa', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' }}>
+               <Typography sx={{ color: '#acaba9' }}>Lead & Booking Pipeline</Typography>
+            </S.QuadrantBox>
+          </S.DashboardGrid>
         )}
-        </Box>
+      </Box>
 
-      {/* ADD LOCATION DRAWER */}
       <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
         <S.DrawerContent>
           <Typography variant="h6" sx={{ fontWeight: 700, color: '#37352f' }}>New Location</Typography>
