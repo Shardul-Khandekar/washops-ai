@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { 
-  Box, Typography, IconButton, Stack, Switch, 
-  Divider, CircularProgress, InputBase, TextField, InputAdornment, Button
+  Box, Typography, IconButton, Stack, Switch, Divider, 
+  CircularProgress, InputBase, TextField, Collapse, Button 
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import axios from 'axios';
 import * as S from '../styles/Dashboard.styles';
 
-// --- TIME HELPERS ---
+// --- HELPERS ---
 const to12h = (time24) => {
   if (!time24) return { h: '09', m: '00', period: 'AM' };
   let [h, m] = time24.split(':');
@@ -27,6 +28,7 @@ const to24h = (h, m, period) => {
   return `${hour.toString().padStart(2, '0')}:${m || '00'}`;
 };
 
+// --- COMPONENTS ---
 const TimeField = ({ value, onChange }) => {
   const { h, m, period } = to12h(value);
   const [localH, setLocalH] = useState(h);
@@ -45,22 +47,19 @@ const TimeField = ({ value, onChange }) => {
     }
   };
 
-  const togglePeriod = () => onChange(to24h(localH, localM, period === 'AM' ? 'PM' : 'AM'));
-
   return (
     <S.TimeInputWrapper>
       <InputBase value={localH} onChange={(e) => handleInputChange('h', e.target.value)} onBlur={() => !localH && setLocalH('12')} inputProps={{ style: { padding: 0, textAlign: 'center', width: '20px' }, maxLength: 2 }} sx={{ fontSize: '13px', fontWeight: 600 }} />
       <Typography sx={{ fontSize: '13px', fontWeight: 600, color: '#acaba9', mx: 0.1 }}>:</Typography>
       <InputBase value={localM} onChange={(e) => handleInputChange('m', e.target.value)} onBlur={() => !localM && setLocalM('00')} inputProps={{ style: { padding: 0, textAlign: 'center', width: '20px' }, maxLength: 2 }} sx={{ fontSize: '13px', fontWeight: 600 }} />
       <Stack direction="row" spacing={0.1} sx={{ ml: 0.5, borderLeft: '1px solid #ededed', pl: 0.5 }}>
-        <S.ToggleButton $active={period === 'AM'} onClick={togglePeriod}>AM</S.ToggleButton>
-        <S.ToggleButton $active={period === 'PM'} onClick={togglePeriod}>PM</S.ToggleButton>
+        <S.ToggleButton $active={period === 'AM'} onClick={() => onChange(to24h(localH, localM, 'AM'))}>AM</S.ToggleButton>
+        <S.ToggleButton $active={period === 'PM'} onClick={() => onChange(to24h(localH, localM, 'PM'))}>PM</S.ToggleButton>
       </Stack>
     </S.TimeInputWrapper>
   );
 };
 
-// --- MAIN COMPONENT ---
 function LocationDetail({ wash, onBack }) {
   const { washId } = useParams();
   const [hours, setHours] = useState([]);
@@ -70,32 +69,17 @@ function LocationDetail({ wash, onBack }) {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [hoursRes, servicesRes] = await Promise.all([
+        const [hRes, sRes] = await Promise.all([
           axios.get(`http://localhost:5001/api/ops/${washId}/hours`),
           axios.get(`http://localhost:5001/api/ops/${washId}/services`)
         ]);
-        if (hoursRes.data) setHours(hoursRes.data);
-        if (servicesRes.data) setServices(servicesRes.data);
-      } catch (err) { console.error("Fetch Error:", err); }
+        setHours(hRes.data || []);
+        setServices(sRes.data || []);
+      } catch (err) { console.error(err); }
       finally { setLoading(false); }
     };
     loadData();
   }, [washId]);
-
-  const handleHourChange = (index, field, value) => {
-    const updated = [...hours];
-    updated[index][field] = value;
-    setHours(updated);
-  };
-
-  const handleServiceUpdate = (id, field, value) => {
-    setServices(services.map(s => s.id === id ? { ...s, [field]: value } : s));
-  };
-
-  const handleAddService = () => {
-    const newService = { id: `temp-${Date.now()}`, name: '', price: '0.00', is_active: 1 };
-    setServices([...services, newService]);
-  };
 
   const saveAll = async () => {
     try {
@@ -103,8 +87,8 @@ function LocationDetail({ wash, onBack }) {
         axios.post(`http://localhost:5001/api/ops/${washId}/hours`, { hours }),
         axios.post(`http://localhost:5001/api/ops/${washId}/services`, { services })
       ]);
-      alert("All configurations synced successfully!");
-    } catch (err) { console.error("Save Error:", err); }
+      alert("AI Knowledge Updated!");
+    } catch (err) { console.error(err); }
   };
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
@@ -113,66 +97,54 @@ function LocationDetail({ wash, onBack }) {
     <Box sx={{ animation: 'fadeIn 0.3s ease-in' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 2 }}>
         <IconButton onClick={onBack} sx={{ border: '1px solid #ededed' }}><ArrowBackIcon fontSize="small" /></IconButton>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, color: '#37352f' }}>{wash?.name}</Typography>
-          <Typography variant="body2" sx={{ color: '#73726e' }}>Operations & Service Management</Typography>
-        </Box>
-        <Box sx={{ ml: 'auto' }}>
-           <S.ActionButton variant="contained" startIcon={<SaveIcon />} onClick={saveAll}>Save All Changes</S.ActionButton>
-        </Box>
+        <Box><Typography variant="h4" sx={{ fontWeight: 700 }}>{wash?.name}</Typography></Box>
+        <Box sx={{ ml: 'auto' }}><S.ActionButton variant="contained" startIcon={<SaveIcon />} onClick={saveAll}>Save All Changes</S.ActionButton></Box>
       </Box>
 
       <Divider sx={{ mb: 3 }} />
 
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-        {/* LEFT COLUMN: BUSINESS HOURS */}
+        {/* HOURS COLUMN */}
         <S.QuadrantBox>
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontSize: '15px' }}>Business Hours</Typography>
-          <S.ScheduleHeaderRow>
-            <Typography sx={{ width: '80px', fontSize: '10px', fontWeight: 800, color: '#acaba9' }}>DAY</Typography>
-            <Typography sx={{ width: '50px', fontSize: '10px', fontWeight: 800, color: '#acaba9' }}>STATUS</Typography>
-            <Typography sx={{ ml: 2, fontSize: '10px', fontWeight: 800, color: '#acaba9' }}>OPERATING HOURS</Typography>
-          </S.ScheduleHeaderRow>
-          <Stack spacing={0}>
-            {hours.map((item, index) => (
-              <Box key={item.day_of_week} sx={{ display: 'flex', alignItems: 'center', py: 1.5, borderBottom: '1px solid #f1f1f1', opacity: item.is_closed ? 0.4 : 1 }}>
-                <Typography sx={{ width: '80px', fontWeight: 600, fontSize: '13px' }}>{item.day_of_week}</Typography>
-                <Box sx={{ width: '50px' }}><Switch size="small" checked={!item.is_closed} onChange={(e) => handleHourChange(index, 'is_closed', !e.target.checked ? 1 : 0)} /></Box>
-                <Box sx={{ ml: 2, flexGrow: 1 }}>
-                  {!item.is_closed ? (
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <TimeField value={item.open_time} onChange={(val) => handleHourChange(index, 'open_time', val)} />
-                      <Typography sx={{ color: '#acaba9', fontWeight: 700, fontSize: '10px' }}>TO</Typography>
-                      <TimeField value={item.close_time} onChange={(val) => handleHourChange(index, 'close_time', val)} />
-                    </Stack>
-                  ) : <Typography variant="caption" sx={{ fontWeight: 700, color: '#73726e' }}>CLOSED</Typography>}
-                </Box>
-              </Box>
-            ))}
-          </Stack>
+          {hours.map((item, index) => (
+            <Box key={item.day_of_week} sx={{ display: 'flex', alignItems: 'center', py: 1.5, borderBottom: '1px solid #f1f1f1', opacity: item.is_closed ? 0.4 : 1 }}>
+              <Typography sx={{ width: '80px', fontWeight: 600, fontSize: '13px' }}>{item.day_of_week}</Typography>
+              <Switch size="small" checked={!item.is_closed} onChange={(e) => {
+                const updated = [...hours];
+                updated[index].is_closed = e.target.checked ? 0 : 1;
+                setHours(updated);
+              }} />
+              {!item.is_closed && (
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ ml: 'auto' }}>
+                  <TimeField value={item.open_time} onChange={(v) => { const u = [...hours]; u[index].open_time = v; setHours(u); }} />
+                  <Typography sx={{ fontSize: '10px', fontWeight: 800, color: '#acaba9' }}>TO</Typography>
+                  <TimeField value={item.close_time} onChange={(v) => { const u = [...hours]; u[index].close_time = v; setHours(u); }} />
+                </Stack>
+              )}
+            </Box>
+          ))}
         </S.QuadrantBox>
 
-        {/* RIGHT COLUMN: SERVICE CATALOG */}
+        {/* SERVICES COLUMN */}
         <S.QuadrantBox>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '15px' }}>Service Catalog</Typography>
-            <Button size="small" startIcon={<AddIcon />} onClick={handleAddService} sx={{ color: '#2383e2', fontWeight: 700, fontSize: '11px' }}>Add Service</Button>
+            <Button size="small" startIcon={<AddIcon />} onClick={() => setServices([...services, { id: Date.now(), name: '', price: '0.00', description: '' }])}>Add</Button>
           </Box>
-          <S.ScheduleHeaderRow>
-            <Typography sx={{ flex: 1, fontSize: '10px', fontWeight: 800, color: '#acaba9' }}>PACKAGE NAME</Typography>
-            <Typography sx={{ width: '70px', fontSize: '10px', fontWeight: 800, color: '#acaba9' }}>PRICE</Typography>
-            <Typography sx={{ width: '40px', fontSize: '10px', fontWeight: 800, color: '#acaba9', textAlign: 'center' }}>ACT.</Typography>
-          </S.ScheduleHeaderRow>
-          <Stack spacing={0.5}>
-            {services.map((service) => (
-              <Box key={service.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1, borderBottom: '1px solid #f1f1f1' }}>
-                <InputBase fullWidth value={service.name} onChange={(e) => handleServiceUpdate(service.id, 'name', e.target.value)} placeholder="Service Name" sx={{ fontSize: '13px', fontWeight: 500 }} />
-                <InputBase value={service.price} onChange={(e) => handleServiceUpdate(service.id, 'price', e.target.value)} startAdornment={<Typography sx={{ fontSize: '13px', mr: 0.5 }}>$</Typography>} sx={{ width: '70px', fontSize: '13px', fontWeight: 600 }} />
-                <Switch size="small" checked={!!service.is_active} onChange={(e) => handleServiceUpdate(service.id, 'is_active', e.target.checked ? 1 : 0)} />
-                <IconButton size="small" onClick={() => setServices(services.filter(s => s.id !== service.id))}><DeleteOutlineIcon sx={{ fontSize: '18px', color: '#ff4d4d' }} /></IconButton>
-              </Box>
-            ))}
-          </Stack>
+          {services.map((s, i) => (
+            <Box key={s.id} sx={{ borderBottom: '1px solid #f1f1f1', py: 1 }}>
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <InputBase fullWidth value={s.name} onChange={(e) => { const u = [...services]; u[i].name = e.target.value; setServices(u); }} placeholder="Package Name" sx={{ fontSize: '13px', fontWeight: 600 }} />
+                <InputBase value={s.price} onChange={(e) => { const u = [...services]; u[i].price = e.target.value; setServices(u); }} startAdornment={<Typography sx={{ fontSize: '12px', mr: 0.5 }}>$</Typography>} sx={{ width: '60px', fontSize: '13px' }} />
+                <IconButton size="small" onClick={() => { const u = [...services]; u[i].expanded = !u[i].expanded; setServices(u); }}><SmartToyIcon sx={{ fontSize: '18px', color: s.description ? '#2383e2' : '#ccc' }} /></IconButton>
+                <IconButton size="small" onClick={() => setServices(services.filter(item => item.id !== s.id))}><DeleteOutlineIcon sx={{ fontSize: '18px', color: '#ff4d4d' }} /></IconButton>
+              </Stack>
+              <Collapse in={s.expanded}>
+                <TextField fullWidth multiline rows={2} placeholder="AI Context for this service..." value={s.description || ''} onChange={(e) => { const u = [...services]; u[i].description = e.target.value; setServices(u); }} sx={{ mt: 1, '& .MuiInputBase-root': { fontSize: '12px', bgcolor: '#fbfbfa', p: 1 } }} />
+              </Collapse>
+            </Box>
+          ))}
         </S.QuadrantBox>
       </Box>
     </Box>
