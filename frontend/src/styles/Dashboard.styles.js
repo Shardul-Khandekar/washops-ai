@@ -1,18 +1,23 @@
 import { styled } from '@mui/material/styles';
 import { Box, Button, ListItemButton, Paper, Typography, TextField } from '@mui/material';
 
-export const SidebarContainer = styled(Box)(({ theme }) => ({
+export const SidebarContainer = styled(Box)({
   width: '240px',
   height: '100vh',
   backgroundColor: '#fbfbfa',
   borderRight: '1px solid #ededed',
-  display: 'flex',
-  flexDirection: 'column',
+  display: 'flex',            // Enable Flexbox for vertical alignment
+  flexDirection: 'column',   // Stack children vertically
   position: 'fixed',
   left: 0,
   top: 0,
   zIndex: 100,
-}));
+});
+
+// Spacer to push the logout button to the bottom
+export const SidebarSpacer = styled(Box)({
+  flexGrow: 1, 
+});
 
 export const SidebarHeader = styled(Box)({
   padding: '24px 16px 12px 16px',
@@ -100,7 +105,7 @@ export const StatusDot = styled('div', {
 }));
 
 export const TimeInputWrapper = styled(Box)({
-  display: 'inline-flex', // Tight border around the time
+  display: 'inline-flex',
   alignItems: 'center',
   backgroundColor: '#fbfbfa',
   border: '1px solid #ededed',
@@ -168,3 +173,22 @@ export const ActionButton = styled(Button)(({ variant }) => ({
     backgroundColor: variant === 'contained' ? '#1a6dc3' : '#f1f1f1',
   },
 }));
+
+export const LogoutButton = styled(ListItemButton)({
+  marginBottom: '24px', // Space from bottom
+  borderRadius: '6px',
+  margin: '2px 8px',
+  padding: '6px 12px',
+  color: '#ff4d4d',
+  '&:hover': {
+    backgroundColor: 'rgba(255, 77, 77, 0.05)',
+  },
+  '& .MuiTypography-root': {
+    fontSize: '14px',
+    fontWeight: 500,
+  },
+  '& .MuiListItemIcon-root': {
+    minWidth: '32px',
+    color: '#ff4d4d',
+  },
+});
