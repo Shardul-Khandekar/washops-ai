@@ -111,10 +111,6 @@ function HomePage() {
         ) : (
           /* SHOW DASHBOARD GRID */
           <>
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, color: '#37352f' }}>
-              Workspace
-            </Typography>
-
             <S.DashboardGrid>
               <S.QuadrantBox>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
