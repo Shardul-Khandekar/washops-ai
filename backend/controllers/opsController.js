@@ -1,3 +1,4 @@
+const axios = require('axios');
 const opsService = require('../services/opsService');
 const logger = require('../utils/logger');
 
@@ -50,4 +51,45 @@ const syncServices = async (req, res) => {
   res.status(500).json(result);
 };
 
-module.exports = { getHours, updateHours, getServices, syncServices };
+const syncToAI = async (req, res) => {
+  const { id } = req.params;
+  const { owner_email } = req.body;
+
+  console.log(`Initiating AI sync for Wash ID: ${id} by owner: ${owner_email}`);
+
+  try {
+    // Fetch current hours and services
+    const [hoursRes, servicesRes] = await Promise.all([
+      opsService.getHoursByWashId(id),
+      opsService.getServicesByWashId(id)
+    ]);
+
+    // Create Python payload
+    const data_points = [
+      ...hoursRes.data.map(h => ({
+        content: `${h.day_of_week}: ${h.is_closed ? 'Closed' : h.open_time + ' to ' + h.close_time}`,
+        metadata: { category: 'hours' }
+      })),
+      ...servicesRes.data.map(s => ({
+        content: `Service: ${s.name}, Price: $${s.price}. ${s.description || ''}`,
+        metadata: { category: 'service', service_id: s.id }
+      }))
+    ];
+
+    console.log(`Called AI sync with data points: ${JSON.stringify(data_points)}`);
+
+    const pythonResponse = await axios.post('http://localhost:8000/sync', {
+      owner_email,
+      wash_id: parseInt(id),
+      data_points
+    });
+
+    return res.status(200).json({ success: pythonResponse.data.success });
+  } catch (error) {
+    console.error("AI Sync Error:", error.message);
+    res.status(500).json({ success: false, error: "Failed to sync with AI service" });
+  }
+};
+
+
+module.exports = { getHours, updateHours, getServices, syncServices, syncToAI };
