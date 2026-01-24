@@ -53,3 +53,6 @@ dist-ssr
 
 package-lock.json
 package.json
+
+.venv
+data
