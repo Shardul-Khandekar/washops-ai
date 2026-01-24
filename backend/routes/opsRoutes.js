@@ -14,4 +14,7 @@ router.post('/:id/hours', opsController.updateHours);
 router.get('/:id/services', opsController.getServices);
 router.post('/:id/services', opsController.syncServices);
 
+// AI Sync endpoint
+router.post('/:id/sync-ai', opsController.syncToAI);
+
 module.exports = router;
